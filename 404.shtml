@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — 404</title>
+
+  <!-- Global styles -->
+  <link rel="stylesheet" href="css/style.css?v=404a" />
+
+  <!-- tweaks -->
+  <style>
+    .err-wrap{width:min(1100px,95vw);margin:22px auto 0;}
+    .err-card{
+      display:grid;grid-template-columns:120px 1fr;gap:18px;
+      align-items:center;
+      background:rgba(255,255,255,.86);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      padding:18px;backdrop-filter:blur(6px);
+    }
+    .err-img{width:100%;height:auto;display:block;}
+    .err-title{margin:0;font:900 28px/1.2 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial;color:#0b1a14;}
+    .err-copy{margin:6px 0 0;color:#2b2b2b}
+    .err-actions{margin-top:12px;display:flex;gap:10px;flex-wrap:wrap}
+    .btn-link{
+      display:inline-block;padding:10px 16px;border-radius:12px;text-decoration:none;color:#fff;
+      background:linear-gradient(#2fbf71,#14934d);border:2px solid rgba(255,255,255,.8);font-weight:800;
+      box-shadow:0 6px 16px rgba(0,0,0,.18);
+    }
+    @media (max-width:640px){
+      .err-card{grid-template-columns:1fr; text-align:center;}
+      .err-img{max-width:120px;margin:0 auto;}
+    }
+  </style>
+</head>
+<body class="has-bg">
+  <!-- Header -->
+  <header class="topbar">
+    <a class="brand" id="displayName" href="frontpage.html">Tên nhóm here</a>
+
+    <div class="user-pane">
+      <img class="avatar" src="img/logo.png" alt="" />
+      <div class="user-meta">
+        <button id="userMenuBtn" class="user-trigger" type="button"
+          aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+          <span id="headerUsername">Username</span>
+        </button>
+        <div class="user-stats">
+          <span class="stat"><img src="img/leaf.png" alt="" class="stat-icon"><span id="leafCount">0</span></span>
+          <span class="stat"><img src="img/fire.png" alt="" class="stat-icon"><span id="streakCount">0</span></span>
+        </div>
+      </div>
+
+      <div id="userMenu" class="user-menu" role="menu" aria-label="User menu">
+        <button id="logoutBtn" class="menu-item" role="menuitem" type="button">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="frontpage.html">Trang Chủ</a>
+    <a href="about-us.html">Thông Tin</a>
+    <a href="green-up.html">Green Up</a>
+    <a href="achievements.html">Huy Hiệu</a>
+    <a href="helpandcontact.html">Trợ Giúp &amp; Liên Hệ</a>
+  </nav>
+
+  <main class="err-wrap">
+    <section class="err-card">
+      <img src="img/error404.png" alt="Biểu tượng lỗi 404" class="err-img" />
+      <div>
+        <h1 class="err-title">TRANG KHÔNG TÌM THẤY</h1>
+        <p class="err-copy">Có vẻ như liên kết bạn truy cập không tồn tại hoặc đã được di chuyển.</p>
+        <div class="err-actions">
+          <a class="btn-link" href="frontpage.html">Về Trang chủ</a>
+          <a class="btn-link" href="helpandcontact.html" style="background:linear-gradient(#32b5a4,#188b7e);">Trợ giúp &amp; liên hệ</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="frontpage.html">Trang chủ</a>
+        <a href="about-us.html">Giới Thiệu</a>
+        <a href="mailto:greenupproject7a10@gmail.com">Liên Hệ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img src="img/call-icon.png" alt="" class="phone-icon" />
+      <div>
+        <div class="contact-title">Liên Hệ</div>
+        <a class="tel" href="tel:0963705622">0963 705 622</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Shared behavior (fills username/counters, dropdown, etc.) -->
+  <script defer src="js/script.js?v=404a"></script>
+</body>
+</html>

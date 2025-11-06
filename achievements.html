@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-HVVBRLHDV3');
+</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — Huy Hiệu</title>
+
+  <!-- Auth guard (session OR local, works across refreshes) -->
+  <script>
+    (function () {
+      try {
+        const authed =
+          localStorage.getItem('greenup_auth') === 'true' ||
+          sessionStorage.getItem('greenup_auth') === 'true';
+        if (!authed) location.replace('index.html');
+      } catch(e){ location.replace('index.html'); }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/style.css?v=ach13" />
+
+  <style>
+    /* Page-scoped styles (safe to keep tiny) */
+    .ach-wrap{width:min(1100px,95vw);margin:22px auto;}
+    .ach-card{background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.08);border-radius:18px;padding:18px 18px 8px;backdrop-filter:blur(6px)}
+    .ach-top{display:grid;grid-template-columns:1fr;gap:10px}
+    .leaf-row{display:flex;align-items:center;gap:10px}
+    .leaf-row img{width:32px;height:32px}
+    .leaf-num{font:900 34px/1.1 ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial}
+    .rank-strip{display:flex;gap:14px;align-items:center;overflow:auto;padding:8px 2px}
+    .rank-pill{display:grid;place-items:center;width:64px}
+    .rank-pill img{width:48px;height:48px;object-fit:contain;border-radius:12px;background:#fff8;border:1px solid #0001}
+    .rank-label{font-size:12px;margin-top:4px;opacity:.8}
+    .rank-active img{outline:3px solid #2ea44f}
+
+    h3.grp{margin:16px 0 10px;font-weight:900}
+    .badge-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+    .badge{position:relative;border-radius:12px;background:#fff;border:1px solid #0001;padding:10px 12px}
+    .badge .t{font-weight:800;font-size:14px}
+    .badge .d{font-size:12px;opacity:.75;margin-top:2px}
+    .badge.lock{opacity:.45}
+    .badge.done{box-shadow:0 0 0 2px #2ea44f inset}
+    .badge .check{position:absolute;right:6px;top:6px;width:16px;height:16px;border-radius:999px;background:#2ea44f;color:#fff;font-size:12px;display:grid;place-items:center}
+
+    @media (min-width:860px){
+      .badge-grid{grid-template-columns:repeat(5,1fr)}
+    }
+  </style>
+ 
+</head>
+
+<body class="has-bg">
+  <!-- Header -->
+  <header class="topbar">
+    <a class="brand" id="displayName" href="frontpage.html">Tên nhóm here</a>
+    <div class="user-pane">
+      <img class="avatar" src="img/logo.png" alt="" />
+      <div class="user-meta">
+        <button id="userMenuBtn" class="user-trigger" type="button"
+          aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+          <span id="headerUsername">Username</span>
+        </button>
+        <div class="user-stats">
+          <span class="stat"><img src="img/leaf.png" class="stat-icon" alt=""><span id="leafCount">0</span></span>
+          <span class="stat"><img src="img/fire.png" class="stat-icon" alt=""><span id="streakCount">0</span></span>
+        </div>
+      </div>
+      <div id="userMenu" class="user-menu" role="menu">
+        <button id="logoutBtn" class="menu-item" role="menuitem" type="button">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="frontpage.html">Trang Chủ</a>
+    <a href="about-us.html">Giới Thiệu</a>
+    <a href="tin-tuc.html">Tin Tức</a>
+    <a href="green-up.html">Green Up</a>
+    <a href="achievements.html" aria-current="page">Huy Hiệu</a>
+    <a href="helpandcontact.html">Trợ Giúp &amp; Liên Hệ</a>
+  </nav>
+
+  <main class="ach-wrap">
+    <section class="ach-card ach-top">
+      <div>
+        <div class="leaf-row">
+          <img src="img/leaf.png" alt="">
+          <div class="leaf-num"><span id="achLeafTotal">0</span></div>
+        </div>
+        <div class="rank-strip" id="rankStrip">
+          <div class="rank-pill" data-r="seed"><img src="img/ranks/seed.png" onerror="this.src='img/logo.png'"><div class="rank-label">Seed</div></div>
+          <div class="rank-pill" data-r="sprout"><img src="img/ranks/sprout.png" onerror="this.src='img/logo.png'"><div class="rank-label">Sprout</div></div>
+          <div class="rank-pill" data-r="sapling"><img src="img/ranks/sapling.png" onerror="this.src='img/logo.png'"><div class="rank-label">Sapling</div></div>
+          <div class="rank-pill" data-r="plant"><img src="img/ranks/plant.png" onerror="this.src='img/logo.png'"><div class="rank-label">Plant</div></div>
+          <div class="rank-pill" data-r="flower"><img src="img/ranks/flower.png" onerror="this.src='img/logo.png'"><div class="rank-label">Flower</div></div>
+          <div class="rank-pill" data-r="tree"><img src="img/ranks/tree.png" onerror="this.src='img/logo.png'"><div class="rank-label">Tree</div></div>
+          <div class="rank-pill" data-r="earthsaver"><img src="img/ranks/earth-saver.png" onerror="this.src='img/logo.png'"><div class="rank-label">Earth Saver</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Groups -->
+    <section class="ach-card" id="badges">
+      <h3 class="grp">• Green Starter (Người mới)</h3>
+      <div class="badge-grid" id="grp1"></div>
+
+      <h3 class="grp">• Green Explorer (Trung cấp)</h3>
+      <div class="badge-grid" id="grp2"></div>
+
+      <h3 class="grp">• Green Leader (Chuyên gia)</h3>
+      <div class="badge-grid" id="grp3"></div>
+
+      <h3 class="grp">• Legend (Huyền Thoại)</h3>
+      <div class="badge-grid" id="grp4"></div>
+    </section>
+  </main>
+
+  <!-- Footer (same layout) -->
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="frontpage.html">Trang chủ</a>
+        <a href="about-us.html">Giới Thiệu</a>
+        <a href="helpandcontact.html">Liên Hệ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img src="img/call-icon.png" alt="" class="phone-icon" />
+      <div>
+        <div class="contact-title">Liên Hệ</div>
+        <a class="tel" href="tel:0963705622">0963 705 622</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Shared site script + page logic -->
+  <script defer src="js/script.js?v=ach13"></script>
+  <script>
+  (function(){
+    // ---------- BADGE DEFINITIONS ----------
+    const GROUPS = {
+      grp1: [
+        {id:'green_starter', t:'Green Starter', d:'Bắt đầu hành trình mới'},
+        {id:'green_blogger', t:'Green Blogger', d:'Đăng bài viết'},
+        {id:'planter', t:'Planter', d:'Trồng 1 cây'},
+        {id:'trash_collector', t:'Trash collector', d:'Nhặt rác 7 ngày'},
+        {id:'say_no_plastic', t:'Say NO to plastic bag', d:'Dùng túi vải'},
+        {id:'green_sharer', t:'Green Sharer', d:'Chia sẻ cho 5 người'},
+        {id:'trash_sorter', t:'Trash sorter', d:'Phân loại rác 3 ngày'},
+        {id:'fire', t:'Fire', d:'Duy trì streak 1 tuần'}
+      ],
+      grp2: [
+        {id:'poster_designer', t:'Poster Designer', d:'Tạo & đăng 1 poster'},
+        {id:'biker', t:'Biker', d:'Đi xe đạp trong 1 tuần'},
+        {id:'eco_scavenger', t:'Eco Scavenger', d:'Nhặt rác ở 3 nơi'},
+        {id:'crafter', t:'Crafter', d:'Làm 5 món tái chế'},
+        {id:'green_social', t:'Green Social', d:'Chia sẻ cho 20 người'},
+        {id:'green_classroom', t:'Green Classroom', d:'Trình bày thông tin xanh'},
+        {id:'torch', t:'Torch', d:'Streak 1 tháng'}
+      ],
+      grp3: [
+        {id:'eco_club', t:'Eco-Club', d:'Tham gia CLB'},
+        {id:'postcaster', t:'Postcaster', d:'Tạo 3 postcard'},
+        {id:'fundraiser', t:'Fundraiser', d:'Gây quỹ 1 dự án'},
+        {id:'badges_hunter', t:'Badges hunter', d:'Đạt 10 huy hiệu'},
+        {id:'contactor', t:'Contactor', d:'Chia sẻ cho 50 người'},
+        {id:'green_ideas', t:'Green Ideas', d:'3 sáng kiến xanh'},
+        {id:'green_leader', t:'Green Leader', d:'Dự án đổi đồ cũ lấy cây'}
+      ],
+      grp4: [
+        {id:'eco_leader', t:'Eco-Leader', d:'Sáng lập CLB'},
+        {id:'earth_saver', t:"Earth’s Saver", d:'10 hoạt động xanh'},
+        {id:'inventor', t:'Inventor', d:'Tạo 1 sản phẩm xanh'},
+        {id:'bonfire', t:'Bonfire', d:'Streak 1 quý'},
+        {id:'badges_collector', t:'Badges Collector', d:'Thu thập 20 huy hiệu'},
+        {id:'advocate', t:'Advocate', d:'Chia sẻ đến 100 người'},
+        {id:'green_student', t:'Green Student', d:'Nêu tên trên bản tin'},
+        {id:'event_creator', t:'Event Creator', d:'Tổ chức 3 sự kiện'}
+      ]
+    };
+
+    // ---------- DOM BUILD ----------
+    for (const gid of Object.keys(GROUPS)){
+      const host = document.getElementById(gid);
+      GROUPS[gid].forEach(b => {
+        const el = document.createElement('div');
+        el.className = 'badge lock';
+        el.dataset.id = b.id;
+        el.innerHTML = `<div class="t">${b.t}</div><div class="d">${b.d}</div>`;
+        host.appendChild(el);
+      });
+    }
+
+    // ---------- UTIL: entries + counters ----------
+    function loadEntries(){
+      try { return JSON.parse(localStorage.getItem('greenup_entries')||'[]'); }
+      catch (_){ return []; }
+    }
+    const entries = loadEntries();
+    const streak = parseInt(sessionStorage.getItem('streak_count')||'0',10);
+
+    // map activityType (VN -> slug)
+    function typeSlug(raw){
+      const s = (raw||'').toLowerCase();
+      if (s.includes('viết')) return 'blog';
+      if (s.includes('trồng')) return 'plant';
+      if (s.includes('nhặt rác')) return 'trash';
+      if (s.includes('túi vải')) return 'plastic';
+      if (s.includes('chia sẻ')) return 'share';
+      if (s.includes('phân loại')) return 'sort';
+      if (s.includes('clb') && s.includes('sáng lập')) return 'found_club';
+      if (s.includes('clb')) return 'join_club';
+      if (s.includes('postcard') || s.includes('poster')) return 'postcard';
+      if (s.includes('gây quỹ')) return 'fundraise';
+      if (s.includes('sáng kiến')) return 'idea';
+      if (s.includes('đổi đồ cũ') || s.includes('dự án')) return 'project';
+      if (s.includes('tạo sản phẩm') || s.includes('sản phẩm')) return 'product';
+      if (s.includes('nêu tên') || s.includes('bản tin')) return 'named';
+      if (s.includes('sự kiện') || s.includes('event')) return 'event';
+      return 'other';
+    }
+    const typed = entries.map(e => ({...e, _t: typeSlug(e?.describe?.activityType)}));
+
+    const countType = slug => typed.filter(x => x._t===slug).length;
+    const total = typed.length;
+
+    // distinct days helper (yyyy-mm-dd)
+    const day = ts => new Date(ts||Date.now()).toISOString().slice(0,10);
+    const daysSet = (slug=null) => {
+      const set = new Set();
+      typed.forEach(x => {
+        if (!slug || x._t===slug) set.add(day(x.when));
+      });
+      return set;
+    };
+
+    // ---------- BADGE LOGIC ----------
+    const DONE = new Set();
+
+    function unlock(id){ DONE.add(id); const el = document.querySelector(`[data-id="${id}"]`); if(!el) return; el.classList.remove('lock'); el.classList.add('done'); el.insertAdjacentHTML('beforeend','<div class="check">✓</div>'); }
+
+    // Seed & starter on login
+    const isAuthed = (localStorage.getItem('greenup_auth')==='true' || sessionStorage.getItem('greenup_auth')==='true');
+    if (isAuthed) unlock('green_starter');
+
+    // Group 1
+    if (countType('blog')>=1) unlock('green_blogger');
+    if (countType('plant')>=1) unlock('planter');
+    if (daysSet('trash').size>=7) unlock('trash_collector');
+    if (countType('plastic')>=1) unlock('say_no_plastic');
+    if (countType('share')>=5) unlock('green_sharer');
+    if (daysSet('sort').size>=3) unlock('trash_sorter');
+    if (streak>=7) unlock('fire');
+
+    // Group 2
+    if (countType('postcard')>=1) unlock('poster_designer');
+    // biker: keyword in note
+    if (typed.some(x => /đạp xe|bike/i.test(x?.describe?.activityNote||''))) unlock('biker');
+    // eco_scavenger (3 places via #loc:)
+    (function(){
+      const locs = new Set();
+      typed.filter(x=>x._t==='trash').forEach(x=>{
+        const m = (x?.describe?.activityNote||'').match(/#loc:([^\n#]+)/i);
+        if (m) locs.add(m[1].trim());
+      });
+      if (locs.size>=3) unlock('eco_scavenger');
+    })();
+    if (countType('product')>=5) unlock('crafter');
+    if (countType('share')>=20) unlock('green_social');
+    if (typed.some(x => /trình bày|thuyết trình|giới thiệu/i.test(x?.describe?.activityNote||''))) unlock('green_classroom');
+    if (streak>=30) unlock('torch');
+
+    // Group 3
+    if (countType('join_club')>=1) unlock('eco_club');
+    if (countType('postcard')>=3) unlock('postcaster');
+    if (countType('fundraise')>=1) unlock('fundraiser');
+    if (countType('share')>=50) unlock('contactor');
+    if (countType('idea')>=3) unlock('green_ideas');
+    if (countType('project')>=1) unlock('green_leader');
+
+    // Group 4
+    if (countType('found_club')>=1) unlock('eco_leader');
+    if (total>=10) unlock('earth_saver');
+    if (countType('product')>=1) unlock('inventor');
+    if (streak>=90) unlock('bonfire');
+    if (countType('share')>=100) unlock('advocate');
+    if (countType('named')>=1) unlock('green_student');
+    if (countType('event')>=3) unlock('event_creator');
+
+    // Meta badges that depend on totals
+    function finalizeMeta(){
+      const unlockedNow = document.querySelectorAll('.badge.done').length;
+
+      if (unlockedNow>=10) unlock('badges_hunter');
+      if (unlockedNow>=20) unlock('badges_collector');
+
+      // Leaf total + persist for header
+      const leafTotal = document.querySelectorAll('.badge.done').length;
+      document.getElementById('achLeafTotal').textContent = leafTotal;
+      sessionStorage.setItem('greenup_count', String(leafTotal));
+      localStorage.setItem('greenup_count', String(leafTotal));
+    }
+    finalizeMeta();
+
+    // ---------- Rank thresholds ----------
+    // 1 (login) -> Seed, 4 -> Sprout, 8 -> Sapling, 11 -> Plant, 15 -> Flower, 22 -> Tree, 30 -> Earth Saver
+    const leaves = parseInt(sessionStorage.getItem('greenup_count')||'0',10);
+    function rankFromLeaves(n){
+      if (n>=30) return 'earthsaver';
+      if (n>=22) return 'tree';
+      if (n>=15) return 'flower';
+      if (n>=11) return 'plant';
+      if (n>=8)  return 'sapling';
+      if (n>=4)  return 'sprout';
+      return 'seed';
+    }
+    const rank = rankFromLeaves(leaves || (isAuthed?1:0));
+    const pill = document.querySelector(`.rank-pill[data-r="${rank}"]`);
+    if (pill){ pill.classList.add('rank-active'); }
+
+    // Avatar = highest rank icon (fallback logo)
+    const avatar = document.querySelector('.avatar');
+    const rankImgMap = {
+      seed:'img/ranks/seed.png', sprout:'img/ranks/sprout.png',
+      sapling:'img/ranks/sapling.png', plant:'img/ranks/plant.png',
+      flower:'img/ranks/flower.png', tree:'img/ranks/tree.png',
+      earthsaver:'img/ranks/earth-saver.png'
+    };
+    if (avatar){ avatar.src = rankImgMap[rank] || 'img/logo.png'; avatar.onerror = () => (avatar.src='img/logo.png'); }
+
+    // Keep header counters in sync
+    const leafEl = document.getElementById('leafCount');
+    const streakEl = document.getElementById('streakCount');
+    if (leafEl) leafEl.textContent = sessionStorage.getItem('greenup_count') || '0';
+    if (streakEl) streakEl.textContent = sessionStorage.getItem('streak_count') || '0';
+  })();
+  </script>
+</body>
+</html>

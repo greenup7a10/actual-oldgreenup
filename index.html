@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-HVVBRLHDV3');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — Welcome</title>
+  <link rel="stylesheet" href="css/style.css?v=auth9" />
+
+  <!-- Auto-login everyone as "GREEN UP" then forward to frontpage -->
+  <script>
+    (function () {
+      try {
+        var USER = "GREEN UP";
+        localStorage.setItem('greenup_auth','true');
+        sessionStorage.setItem('greenup_auth','true');
+        localStorage.setItem('greenup_user', USER);
+        sessionStorage.setItem('greenup_user', USER);
+        document.cookie = 'greenup_auth=true; path=/; max-age=31536000; samesite=lax';
+        if (localStorage.getItem('greenup_count') == null) localStorage.setItem('greenup_count','0');
+        if (localStorage.getItem('streak_count') == null)  localStorage.setItem('streak_count','0');
+      } catch (_) {}
+      // straight to homepage
+      location.replace('frontpage.html');
+    })();
+  </script>
+</head>
+<body class="has-bg">
+  <header class="topbar">
+    <a class="brand" href="index.html">Green Up</a>
+  </header>
+  <div class="hero-strip"></div>
+
+  <main class="center-wrap">
+    <section class="card login-card" style="text-align:center">
+      <h1>ĐANG VÀO TRANG CHỦ…</h1>
+      <p>Nếu bạn không được chuyển trang tự động, bấm <a href="frontpage.html">vào đây</a>.</p>
+    </section>
+  </main>
+
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="index.html">Trang chủ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img src="img/call-icon.png" alt="" class="phone-icon" />
+      <div>
+        <div class="contact-title">Liên Hệ</div>
+        <a class="tel" href="tel:0963705622">0963 705 622</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Shared script (kept; harmless here) -->
+  <script defer src="js/script.js?v=auth9"></script>
+</body>
+</html>

@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-HVVBRLHDV3');
+</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — Trợ Giúp & Liên Hệ</title>
+
+  <!-- Auth guard (accepts session OR local storage) -->
+  <script>
+    (function () {
+      try {
+        const ok =
+          localStorage.getItem('greenup_auth') === 'true' ||
+          sessionStorage.getItem('greenup_auth') === 'true';
+        if (!ok) location.replace('index.html');
+      } catch (e) { location.replace('index.html'); }
+    })();
+  </script>
+
+  <link rel="stylesheet" href="css/style.css?v=help1" />
+
+  <!-- Page-scoped styles (small, safe) -->
+  <style>
+    /* Load Brittany font for the display name */
+    @font-face{
+      font-family: "Brittany";
+      src: url("/fonts/brittany.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    .help-wrap{width:min(1100px,95vw);margin:22px auto;}
+    .help-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:22px;align-items:center;}
+    @media (max-width:860px){ .help-grid{grid-template-columns:1fr; } }
+
+    .contact-card.content-card h2{margin:6px 0 10px;letter-spacing:1px;}
+    .c-list{display:flex;flex-direction:column;gap:12px;margin:6px 0 4px;}
+    .c-item{display:flex;align-items:center;gap:12px;}
+    .c-badge{
+      width:28px;height:28px;border-radius:999px;
+      display:inline-grid;place-items:center;background:#2ea44f;color:#fff;flex:0 0 auto;
+      box-shadow:0 2px 6px rgba(0,0,0,.15);
+    }
+    .c-badge img{width:18px;height:18px;display:block}
+    .c-badge svg{width:18px;height:18px;display:block}
+    .logo-plate{
+      background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.08);backdrop-filter:blur(6px);
+      border-radius:18px;padding:22px;display:grid;place-items:center;
+    }
+    .big-logo{
+      width:min(280px,42vw);height:min(280px,42vw);
+      background:radial-gradient(#e9f8ec,#c7efcf);
+      border-radius:999px;display:grid;place-items:center;border:4px solid rgba(0,0,0,.06);
+      box-shadow:0 10px 28px rgba(0,0,0,.18) inset, 0 10px 28px rgba(0,0,0,.18);
+    }
+    .big-logo img{width:65%;height:65%;object-fit:contain}
+    .help-actions{margin-top:10px;display:flex;gap:10px;flex-wrap:wrap}
+    .help-actions a{display:inline-block;padding:8px 12px;border-radius:10px;text-decoration:none;color:#0e3b26;background:#eaf7ef;border:1px solid #bfe6c9}
+    .help-actions a:hover{background:#d9f1e0}
+  </style>
+ 
+</head>
+<body class="has-bg">
+  <!-- Header -->
+  <header class="topbar">
+    <!-- Display name now uses Brittany font -->
+    <a class="brand" id="displayName" href="frontpage.html"
+       style="font-family:'Brittany',system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:700;">
+      Tên nhóm here
+    </a>
+
+    <div class="user-pane">
+      <img class="avatar" src="img/logo.png" alt="" />
+      <div class="user-meta">
+        <button id="userMenuBtn" class="user-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+          <span id="headerUsername">Username</span>
+        </button>
+        <div class="user-stats">
+          <span class="stat"><img src="img/leaf.png" alt="" class="stat-icon" /><span id="leafCount">0</span></span>
+          <span class="stat"><img src="img/fire.png" alt="" class="stat-icon" /><span id="streakCount">0</span></span>
+        </div>
+      </div>
+
+      <div id="userMenu" class="user-menu" role="menu" aria-label="User menu">
+        <button id="logoutBtn" class="menu-item" role="menuitem" type="button">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="frontpage.html">Trang Chủ</a>
+    <a href="about-us.html">Giới Thiệu</a>
+    <a href="tin-tuc.html">Tin Tức</a>
+    <a href="green-up.html">Green Up</a>
+    <a href="achievements.html">Huy Hiệu</a>
+    <a href="helpandcontact.html" aria-current="page">Trợ Giúp &amp; Liên Hệ</a>
+  </nav>
+
+  <main class="help-wrap">
+    <div class="help-grid">
+      <!-- Left: contact info card -->
+      <section class="content-card contact-card" aria-labelledby="helpTitle">
+        <h2 id="helpTitle">THÔNG TIN LIÊN HỆ</h2>
+
+        <div class="c-list">
+          <div class="c-item">
+            <span class="c-badge">
+              <img src="img/call-icon.png" alt="">
+            </span>
+            <div>Điện thoại: <a class="tel" href="tel:0963705622">0963 705 622</a></div>
+          </div>
+
+          <div class="c-item">
+            <span class="c-badge" aria-hidden="true">
+              <!-- inline mail icon -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>
+                <path d="m22 8-10 6L2 8"/>
+              </svg>
+            </span>
+            <div>Email: <a href="mailto:greenupproject7a10@gmail.com">greenupproject7a10@gmail.com</a></div>
+          </div>
+        </div>
+
+        <div class="help-actions">
+          <a href="mailto:greenupproject7a10@gmail.com">Gửi email ngay</a>
+          <a href="tel:0963705622">Gọi điện</a>
+        </div>
+      </section>
+
+      <!-- Right: big logo -->
+      <aside class="logo-plate" aria-hidden="true">
+        <div class="big-logo">
+          <img src="img/logo.png" alt="">
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="frontpage.html">Trang chủ</a>
+        <a href="about-us.html">Giới Thiệu</a>
+        <a href="mailto:greenupproject7a10@gmail.com">Liên Hệ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img src="img/call-icon.png" alt="" class="phone-icon" />
+      <div>
+        <div class="contact-title">Liên Hệ</div>
+        <a class="tel" href="tel:0963705622">0963 705 622</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Shared site script (fills header name/counters, menu, logout, etc.) -->
+  <script defer src="js/script.js?v=help1"></script>
+</body>
+</html>

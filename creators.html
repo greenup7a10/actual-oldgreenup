@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-HVVBRLHDV3');
+</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — Creators</title>
+
+  <!-- ONE guard only: localStorage OR sessionStorage -->
+  <script>
+  (function () {
+    try {
+      const authed =
+        localStorage.getItem('greenup_auth') === 'true' ||
+        sessionStorage.getItem('greenup_auth') === 'true';
+      if (!authed) location.replace('index.html');
+    } catch (e) { location.replace('index.html'); }
+  })();
+  </script>
+
+  <link rel="stylesheet" href="css/style.css?v=9" />
+  <script defer src="js/script.js?v=9"></script>
+
+</head>
+<body class="has-bg">
+  <header class="topbar">
+    <a class="brand brand-normal" href="frontpage.html" id="displayName">Tên nhóm here</a>
+    <div class="user-pane" id="userPane">
+      <img class="avatar" src="img/logo.png" alt="" />
+      <div class="user-meta">
+        <button id="userMenuBtn" class="user-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+          <span id="headerUsername">username</span>
+        </button>
+        <div class="user-stats">
+          <span class="stat"><img src="img/leaf.png" alt="" class="stat-icon" /><span id="leafCount">0</span></span>
+          <span class="stat"><img src="img/fire.png" alt="" class="stat-icon" /><span id="streakCount">0</span></span>
+        </div>
+      </div>
+      <div id="userMenu" class="user-menu" role="menu" aria-label="User menu">
+        <button id="logoutBtn" class="menu-item" role="menuitem" type="button">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="frontpage.html">Trang Chủ</a>
+    <a href="about-us.html">Giới Thiệu</a>
+    <a href="tin-tuc.html">Tin Tức</a>
+    <a href="green-up.html">Green Up</a>
+    <a href="achievements.html">Huy Hiệu</a>
+    <a href="helpandcontact.html">Trợ Giúp &amp; Liên Hệ</a>
+  </nav>
+
+  <main class="front-main">
+    <section class="content-card creators">
+      <h1>CREATORS</h1>
+
+      <div class="group-photo">
+        <img src="img/groupphoto.png" alt="Founder of Green Up" />
+        <div class="role">Founder of<br/>Green Up</div>
+      </div>
+
+      <div class="people-grid">
+        <article class="person"><img src="img/cokimphuong.png" alt="Cô Nguyễn Thị Kim Phượng" /><h3>Cô Nguyễn Thị Kim Phượng</h3><p class="role">Advisor</p></article>
+        <article class="person"><img src="img/phanxuanhuy.png" alt="Phan Xuân Huy" /><h3>Phan Xuân Huy</h3><p class="role">Lead Co-Founder<br/>Web Layout Creator</p></article>
+        <article class="person"><img src="img/thaikhanhlinh.png" alt="Thái Khánh Linh" /><h3>Thái Khánh Linh</h3><p class="role">Co-Founder<br/>Content Researcher</p></article>
+        <article class="person"><img src="img/nguyenphuongmai.png" alt="Nguyễn Phương Mai" /><h3>Nguyễn Phương Mai</h3><p class="role">Co-Founder<br/>Content Researcher</p></article>
+        <article class="person"><img src="img/trinhquocbinhnguyen.png" alt="Trịnh Quốc Bình Nguyên" /><h3>Trịnh Quốc Bình Nguyên</h3><p class="role">Co-Founder<br/>Programmer</p></article>
+        <article class="person"><img src="img/nguyensontung.png" alt="Nguyễn Sơn Tùng" /><h3>Nguyễn Sơn Tùng</h3><p class="role">Co-Founder</p></article>
+      </div>
+    </section>
+  </main>
+
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="frontpage.html">Trang chủ</a>
+        <a href="about-us.html">Giới Thiệu</a>
+        <a href="helpandcontact.html">Liên Hệ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img src="img/call-icon.png" alt="" class="phone-icon" />
+      <div><div class="contact-title">Liên Hệ</div><a class="tel" href="tel:0963705622">0963 705 622</a></div>
+    </div>
+  </footer>
+</body>
+</html>

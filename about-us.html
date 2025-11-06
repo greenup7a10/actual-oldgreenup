@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="vi">
+<head>
+    <!-- Google tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-HVVBRLHDV3');
+</script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — Thông Tin</title>
+
+  <link rel="stylesheet" href="css/style.css?v=au3" />
+
+  <!-- Auth guard: cookie OR localStorage OR sessionStorage -->
+  <script>
+    (function () {
+      try {
+        const byCookie = /(?:^|;)\s*greenup_auth=true\b/.test(document.cookie);
+        const authed =
+          byCookie ||
+          localStorage.getItem('greenup_auth') === 'true' ||
+          sessionStorage.getItem('greenup_auth') === 'true';
+        if (!authed) location.replace('index.html');
+      } catch (e) { location.replace('index.html'); }
+    })();
+  </script>
+
+  <!-- Page-scoped polish -->
+  <style>
+    .about-wrap { width:min(1100px,95vw); margin:22px auto 0; }
+    .about-panel { background:rgba(255,255,255,.78); border:1px solid rgba(0,0,0,.08); border-radius:18px; backdrop-filter:blur(6px); padding:22px 22px 18px; }
+    .lined-title { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px; margin:8px 0 18px; }
+    .lined-title::before, .lined-title::after { content:""; height:4px; border-radius:999px; background:rgba(0,0,0,.18); }
+    .lined-title h2 { margin:0; font-size:28px; letter-spacing:2px; }
+    .about-panel p { margin:10px 0; line-height:1.6; }
+    .about-panel .green { color:var(--brand-green-700); font-weight:800; }
+    .about-panel ul { margin:8px 0 0; padding-left:0; list-style:none; }
+    .about-panel li { margin:6px 0; }
+    .about-panel .sec-label { font-weight:800; display:inline-flex; gap:8px; margin:6px 0 4px; }
+    .about-panel .hr-soft { height:2px; border-radius:999px; background:rgba(0,0,0,.18); margin:16px 0 10px; }
+    .about-spacing { height:12px; }
+  </style>
+
+  <script defer src="js/script.js?v=auth11"></script>
+
+</head>
+<body class="has-bg">
+  <header class="topbar">
+    <a class="brand" href="frontpage.html" id="displayName">Tên nhóm here</a>
+    <div class="user-pane">
+      <img class="avatar" src="img/logo.png" alt="" />
+      <div class="user-meta">
+        <button id="userMenuBtn" class="user-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+          <span id="headerUsername">Username</span>
+        </button>
+        <div class="user-stats">
+          <span class="stat"><img src="img/leaf.png" alt="" class="stat-icon" /><span id="leafCount">0</span></span>
+          <span class="stat"><img src="img/fire.png" alt="" class="stat-icon" /><span id="streakCount">0</span></span>
+        </div>
+      </div>
+      <div id="userMenu" class="user-menu" role="menu" aria-label="User menu">
+        <button id="logoutBtn" class="menu-item" role="menuitem" type="button">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="frontpage.html">Trang Chủ</a>
+    <a href="about-us.html" aria-current="page">Giới Thiệu</a>
+    <a href="tin-tuc.html">Tin Tức</a>
+    <a href="green-up.html">Green Up</a>
+    <a href="achievements.html">Huy Hiệu</a>
+    <a href="helpandcontact.html">Trợ Giúp &amp; Liên Hệ</a>
+  </nav>
+
+  <main class="about-wrap">
+    <section class="about-panel">
+      <div class="lined-title"><h2>ABOUT</h2></div>
+
+      <div class="sec-label">🎯 MỤC TIÊU</div>
+      <p>Nâng cao nhận thức các bạn học sinh về ý thức bảo vệ môi trường và hệ sinh thái, lan tỏa
+        thông điệp <span class="green">XANH</span> đến mọi người. Qua đó giúp học sinh thực hiện lối
+        sống <span class="green">XANH</span>, bảo vệ môi trường hằng ngày từ những việc nhỏ nhất.</p>
+
+      <div class="hr-soft" aria-hidden="true"></div>
+
+      <div class="lined-title"><h2>HOW TO</h2></div>
+
+      <div class="sec-label">❓ CÁCH THỨC THAM GIA GREEN UP</div>
+      <ul>
+        <li><strong>Bước 1:</strong> Khi bạn hoàn thành quá trình đăng nhập, màn hình của bạn sẽ hiển thị trang Home.</li>
+        <li><strong>Bước 2:</strong> Nhấp chuột của bạn vào trang Badges.</li>
+        <li><strong>Bước 3:</strong> Chọn một badge yêu thích của bạn.</li>
+        <li><strong>Bước 4:</strong> Sau đó bấm vào Green Up trên thanh menu.</li>
+        <li><strong>Bước 5:</strong> Bạn hãy mô tả hành động xanh của bạn và chia sẻ mục tiêu đạt được badges bạn mong muốn.</li>
+        <li><strong>Bước 6:</strong> Thực hiện những nhiệm vụ được giao.</li>
+        <li><strong>Bước 7:</strong> Chụp hình bằng chứng của bạn và đăng bài viết lên Green Up.</li>
+      </ul>
+    </section>
+    <div class="about-spacing"></div>
+  </main>
+
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="frontpage.html">Trang chủ</a>
+        <a href="about-us.html">Giới Thiệu</a>
+        <a href="helpandcontact.html">Liên Hệ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img src="img/call-icon.png" alt="" class="phone-icon" />
+      <div><div class="contact-title">Liên Hệ</div><a class="tel" href="tel:0963705622">0963 705 622</a></div>
+    </div>
+  </footer>
+</body>
+</html>

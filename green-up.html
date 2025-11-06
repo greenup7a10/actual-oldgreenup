@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-HVVBRLHDV3');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — Green Up</title>
+
+  <!-- Global CSS -->
+  <link rel="stylesheet" href="css/style.css?v=gu13" />
+
+  <!-- Lightweight guard (cookie OR localStorage OR sessionStorage) -->
+  <script>
+    (function () {
+      try {
+        const hasCookie = /(?:^|;)\s*greenup_auth=true\b/.test(document.cookie);
+        const authed = hasCookie ||
+          localStorage.getItem('greenup_auth') === 'true' ||
+          sessionStorage.getItem('greenup_auth') === 'true';
+        if (!authed) location.replace('index.html');
+      } catch (e) { location.replace('index.html'); }
+    })();
+  </script>
+
+  <!-- Page-scoped styles -->
+  <style>
+    /* Brittany font for brand (place file at /fonts/Brittany.ttf) */
+    @font-face{
+      font-family: "Brittany";
+      src: url("/fonts/Brittany.ttf") format("truetype");
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Keep everything in a centered column */
+    .gu-wrap{ width:min(1100px,95vw); margin:22px auto 32px; }
+
+    /* ABOUT / HOW-TO panel (copied from about-us) */
+    .about-panel{
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:18px;
+      backdrop-filter:blur(6px);
+      padding:22px 22px 18px;
+      margin:0 auto 18px;
+    }
+    .lined-title{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px; margin:8px 0 18px; }
+    .lined-title::before, .lined-title::after{ content:""; height:4px; border-radius:999px; background:rgba(0,0,0,.18); }
+    .lined-title h2{ margin:0; font-size:28px; letter-spacing:2px; }
+    .about-panel p{ margin:10px 0; line-height:1.6; }
+    .about-panel .green{ color:var(--brand-green-700); font-weight:800; }
+    .about-panel ul{ margin:8px 0 0; padding-left:0; list-style:none; }
+    .about-panel li{ margin:6px 0; }
+    .about-panel .sec-label{ font-weight:800; display:inline-flex; gap:8px; margin:6px 0 4px; }
+    .about-panel .hr-soft{ height:2px; border-radius:999px; background:rgba(0,0,0,.18); margin:16px 0 10px; }
+
+    /* Grid for prompt + uploader */
+    .gu-grid{ display:grid; grid-template-columns: 1fr 1.2fr; gap:22px; align-items:start; }
+
+    /* Left prompt card */
+    .gu-prompt{
+      min-height:260px; padding:16px;
+      background:rgba(255,255,255,.78);
+      border:1px solid rgba(0,0,0,.08); border-radius:18px;
+      backdrop-filter:blur(6px);
+      cursor:pointer; position:relative;
+    }
+    .gu-prompt::after{
+      content:""; position:absolute; inset:10px;
+      border-radius:18px; border:2px dashed rgba(0,0,0,.2); pointer-events:none;
+    }
+    .gu-prompt h3{ margin:0 0 10px; font-weight:800; }
+    .gu-prompt p{ margin:4px 0; color:#2c2c2c; opacity:.7; }
+
+    /* Upload box (right) */
+    .gu-drop{
+      min-height:320px;
+      background:rgba(255,255,255,.9);
+      border:2px dashed rgba(0,0,0,.35);
+      border-radius:22px;
+      display:grid; place-items:center;
+      text-align:center; padding:20px;
+      transition: border-color .12s ease, background .12s ease;
+    }
+    .gu-drop.dragover{ border-color:#2ea44f; background:#f1fff6; }
+    .gu-drop small{ color:#5b5b5b; }
+
+    .gu-previews{ display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
+
+    /* Removable preview chips */
+    .gu-chip{
+      position:relative; display:inline-flex; align-items:center; gap:6px;
+      font-size:12px; border:1px solid rgba(0,0,0,.15); border-radius:999px;
+      padding:6px 28px 6px 10px; background:#fff;
+      box-shadow:0 2px 4px rgba(0,0,0,.06);
+    }
+    .gu-chip-x{
+      position:absolute; right:4px; top:50%; transform:translateY(-50%);
+      width:18px; height:18px; border:0; border-radius:999px;
+      background:#f2f2f2; cursor:pointer; font-weight:700; line-height:1;
+    }
+    .gu-chip-x:hover{ background:#ffebe9; }
+    .gu-chip-x:focus{ outline:2px solid #2ea44f; outline-offset:1px; }
+
+    /* Upload button */
+    .gu-cta{ display:grid; place-items:center; margin:28px 0 6px; }
+    .gu-cta .btn-upload{
+      display:inline-block; padding:16px 28px; border-radius:18px;
+      background:linear-gradient(#2fbf71,#14934d); color:#fff;
+      font-weight:900; letter-spacing:.5px; border:4px solid rgba(255,255,255,.7);
+      box-shadow:0 10px 24px rgba(0,0,0,.22); cursor:pointer;
+    }
+    .btn-upload[disabled]{ opacity:.6; cursor:not-allowed; }
+
+    /* Modal island – robust centering */
+    .gu-backdrop{
+      position:fixed; inset:0; background:rgba(0,0,0,.45);
+      display:none; z-index:6000;
+    }
+    .gu-backdrop.open{ display:grid; place-items:center; }
+    .gu-modal{
+      width:min(720px,92vw); background:#fff; border-radius:24px;
+      box-shadow:0 24px 60px rgba(0,0,0,.35);
+      padding:20px 20px 18px; position:relative;
+    }
+    .gu-x{
+      position:absolute; top:10px; right:14px; font-size:28px; line-height:1;
+      border:0; background:transparent; cursor:pointer;
+    }
+    .gu-form .row{ margin:10px 0; }
+    .gu-form label{ display:block; font-weight:700; margin:0 0 6px; }
+    .gu-form input[type=text], .gu-form select, .gu-form textarea{
+      width:100%; border:2px solid rgba(0,0,0,.28); border-radius:8px;
+      padding:10px 12px; font-size:15px;
+    }
+    .gu-form textarea{ min-height:90px; resize:vertical; }
+    .gu-help{ font-size:12px; opacity:.7; }
+
+    /* Brand uses Brittany */
+    .topbar .brand{
+      font-family:"Brittany", system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+      font-weight:400;
+      font-size:34px;
+      letter-spacing:.5px;
+    }
+
+    @media (max-width: 860px){
+      .gu-grid{ grid-template-columns: 1fr; }
+    }
+  </style>
+ 
+</head>
+<body class="has-bg">
+  <!-- Header -->
+  <header class="topbar">
+    <a class="brand" id="displayName" href="frontpage.html">Tên nhóm here</a>
+
+    <div class="user-pane">
+      <img class="avatar" src="img/logo.png" alt="" />
+      <div class="user-meta">
+        <button id="userMenuBtn" class="user-trigger" type="button"
+                aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+          <span id="headerUsername">Username</span>
+        </button>
+        <div class="user-stats">
+          <span class="stat"><img src="img/leaf.png" alt="" class="stat-icon" /><span id="leafCount">0</span></span>
+          <span class="stat"><img src="img/fire.png" alt="" class="stat-icon" /><span id="streakCount">0</span></span>
+        </div>
+      </div>
+
+      <div id="userMenu" class="user-menu" role="menu" aria-label="User menu">
+        <button id="logoutBtn" class="menu-item" role="menuitem" type="button">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Nav -->
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="frontpage.html">Trang Chủ</a>
+    <a href="about-us.html">Giới Thiệu</a>
+    <a href="tin-tuc.html">Tin Tức</a>
+    <a href="green-up.html" aria-current="page">Green Up</a>
+    <a href="achievements.html">Huy Hiệu</a>
+    <a href="helpandcontact.html">Trợ Giúp &amp; Liên Hệ</a>
+  </nav>
+
+  <main class="gu-wrap">
+    <!-- ABOUT / HOW-TO on top (centered) -->
+    <section class="about-panel">
+      <div class="lined-title"><h2>ABOUT</h2></div>
+
+      <div class="sec-label">🎯 MỤC TIÊU</div>
+      <p>Nâng cao nhận thức các bạn học sinh về ý thức bảo vệ môi trường và hệ sinh thái, lan tỏa
+        thông điệp <span class="green">XANH</span> đến mọi người. Qua đó giúp học sinh thực hiện lối
+        sống <span class="green">XANH</span>, bảo vệ môi trường hằng ngày từ những việc nhỏ nhất.</p>
+
+      <div class="hr-soft" aria-hidden="true"></div>
+
+      <div class="lined-title"><h2>HOW TO</h2></div>
+
+      <div class="sec-label">❓ CÁCH THỨC THAM GIA GREEN UP</div>
+      <ul>
+        <li><strong>Bước 1:</strong> Khi bạn hoàn thành quá trình đăng nhập, màn hình của bạn sẽ hiển thị trang Home.</li>
+        <li><strong>Bước 2:</strong> Nhấp chuột của bạn vào trang Badges.</li>
+        <li><strong>Bước 3:</strong> Chọn một badge yêu thích của bạn.</li>
+        <li><strong>Bước 4:</strong> Sau đó bấm vào Green Up trên thanh menu.</li>
+        <li><strong>Bước 5:</strong> Bạn hãy mô tả hành động xanh của bạn và chia sẻ mục tiêu đạt được badges bạn mong muốn.</li>
+        <li><strong>Bước 6:</strong> Thực hiện những nhiệm vụ được giao.</li>
+        <li><strong>Bước 7:</strong> Chụp hình bằng chứng của bạn và đăng bài viết lên Green Up.</li>
+      </ul>
+    </section>
+
+    <!-- Prompt + uploader -->
+    <div class="gu-grid">
+      <!-- Left: open modal -->
+      <section class="gu-prompt" id="openDescribe" aria-label="Mô tả hoạt động của bạn">
+        <h3>Mô tả hoạt động của bạn</h3>
+        <p>Họ và Tên…</p>
+        <p>Lớp…</p>
+        <p>Trường…</p>
+        <p>Mô tả về hoạt động…..</p>
+      </section>
+
+      <!-- Right: upload area -->
+      <section>
+        <div id="dropzone" class="gu-drop" role="button" tabindex="0" aria-label="Tải ảnh/video lên">
+          <div>
+            <img src="img/upload-illustration.svg" alt="" width="86" height="48"
+                 style="opacity:.75; margin-bottom:6px" onerror="this.style.display='none'">
+            <div><strong>Upload images/ video here</strong></div>
+            <small>Chấp nhận JPG, JPEG, PNG, MP4 • bạn có thể kéo &amp; thả</small>
+          </div>
+          <input id="fileInput" type="file" accept="image/jpeg,image/png,video/mp4" multiple hidden />
+        </div>
+        <div id="previews" class="gu-previews" aria-live="polite"></div>
+      </section>
+    </div>
+
+    <p class="gu-cta">
+      <button id="submitEntry" class="btn-upload" type="button">UPLOAD</button>
+    </p>
+  </main>
+
+  <!-- Modal: description form -->
+  <div id="describeModal" class="gu-backdrop" aria-hidden="true">
+    <div class="gu-modal" role="dialog" aria-modal="true" aria-labelledby="mdTitle">
+      <button class="gu-x" type="button" id="closeModal" aria-label="Đóng">×</button>
+      <h2 id="mdTitle" style="margin:0 0 8px;">Thông tin hoạt động</h2>
+
+      <form id="describeForm" class="gu-form">
+        <div class="row">
+          <label for="fullName">Họ và Tên</label>
+          <input id="fullName" name="fullName" type="text" placeholder="Nhập tên của bạn…" autocomplete="name">
+        </div>
+
+        <div class="row">
+          <label for="className">Lớp</label>
+          <input id="className" name="className" type="text" placeholder="Nhập lớp của bạn…">
+        </div>
+
+        <div class="row">
+          <label for="schoolName">Tên Trường</label>
+          <input id="schoolName" name="schoolName" type="text" placeholder="Nhập tên trường của bạn…">
+        </div>
+
+        <div class="row">
+          <label for="activityType">Mô Tả Về Hoạt Động</label>
+          <select id="activityType" name="activityType" required>
+            <option value="" selected>Chọn phương án hợp với hoạt động của bạn…</option>
+            <option>Viết bài viết</option>
+            <option>Trồng cây</option>
+            <option>Nhặt rác</option>
+            <option>Sử dụng túi vải</option>
+            <option>Chia sẻ</option>
+            <option>Phân loại rác</option>
+            <option>Tham gia CLB</option>
+            <option>Tạo postcard</option>
+            <option>Gây quỹ</option>
+            <option>Sáng kiến</option>
+            <option>Tạo dự án đổi đồ cũ lấy cây xanh</option>
+            <option>Sáng lập CLB môi trường</option>
+            <option>Tham gia hành động bảo vệ môi trường</option>
+            <option>Tạo sản phẩm</option>
+            <option>Nêu tên lên bản tin trường</option>
+            <option>Tổ chức sự kiện</option>
+          </select>
+          <div class="gu-help">Bạn có thể viết chi tiết hơn bên dưới.</div>
+        </div>
+
+        <div class="row">
+          <label for="activityNote">Chi tiết</label>
+          <textarea id="activityNote" name="activityNote" placeholder="Mô tả ngắn gọn về hoạt động…"></textarea>
+        </div>
+
+        <div class="row" style="text-align:right">
+          <button type="button" class="btn small" id="saveDescribe">Lưu</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="frontpage.html">Trang chủ</a>
+        <a href="about-us.html">Giới Thiệu</a>
+        <a href="helpandcontact.html">Liên Hệ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img src="img/call-icon.png" alt="" class="phone-icon" />
+      <div>
+        <div class="contact-title">Liên Hệ</div>
+        <a class="tel" href="tel:0963705622">0963 705 622</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Shared script (global guard + rank avatar + streak engine) -->
+  <script defer src="js/script.js?v=auth13"></script>
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
+  <!-- Page-only script -->
+  <script>
+    (function(){
+      // ===== Page elements =====
+      const open = document.getElementById('openDescribe');
+      const modal = document.getElementById('describeModal');
+      const closeBtn = document.getElementById('closeModal');
+      const saveDescribe = document.getElementById('saveDescribe');
+      const form = document.getElementById('describeForm');
+
+      const drop = document.getElementById('dropzone');
+      const fileInput = document.getElementById('fileInput');
+      const previews = document.getElementById('previews');
+      const submit = document.getElementById('submitEntry');
+
+      // Local cache of form data + picked files
+      let describeData = {};
+      let pickedFiles = [];
+
+      // ===== Modal open/close =====
+      function openModal(){ modal.classList.add('open'); modal.setAttribute('aria-hidden','false'); }
+      function closeModal(){ modal.classList.remove('open'); modal.setAttribute('aria-hidden','true'); }
+
+      open.addEventListener('click', openModal);
+      closeBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', (e)=>{ if(e.target===modal) closeModal(); });
+      document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+
+      saveDescribe.addEventListener('click', () => {
+        const fd = new FormData(form);
+        const obj = Object.fromEntries(fd.entries());
+        for (const k in obj) if (typeof obj[k] === 'string') obj[k] = obj[k].trim();
+        describeData = obj;
+        closeModal();
+        alert('Đã lưu mô tả hoạt động!');
+      });
+
+      // ===== Upload actions =====
+      const openPicker = () => fileInput.click();
+      drop.addEventListener('click', openPicker);
+      drop.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); openPicker(); }});
+
+      drop.addEventListener('dragover', (e)=>{ e.preventDefault(); drop.classList.add('dragover'); });
+      drop.addEventListener('dragleave', ()=> drop.classList.remove('dragover'));
+      drop.addEventListener('drop', (e)=>{
+        e.preventDefault(); drop.classList.remove('dragover');
+        handleFiles(e.dataTransfer.files);
+      });
+      fileInput.addEventListener('change', ()=> handleFiles(fileInput.files));
+
+      function renderPreviews(){
+        previews.innerHTML = '';
+        if (!pickedFiles.length) return;
+        pickedFiles.forEach((f, i) => {
+          const isVid = f.type.startsWith('video/');
+          const chip = document.createElement('span');
+          chip.className = 'gu-chip';
+          chip.dataset.idx = String(i);
+          chip.innerHTML = `
+            <span>${isVid ? '🎬' : '🖼️'}</span>
+            <span class="gu-chip-name">${f.name}</span>
+            <button type="button" class="gu-chip-x" aria-label="Xóa tệp ${f.name}" title="Xóa">×</button>
+          `;
+          previews.appendChild(chip);
+        });
+      }
+
+      function handleFiles(list){
+        pickedFiles = Array.from(list || []);
+        renderPreviews();
+      }
+
+      // Remove a selected file when clicking ×
+      previews.addEventListener('click', (e) => {
+        const btn = e.target.closest('.gu-chip-x');
+        if (!btn) return;
+        const chip = btn.closest('.gu-chip');
+        const idx  = parseInt(chip?.dataset.idx || '-1', 10);
+        if (!isNaN(idx) && idx >= 0) pickedFiles.splice(idx, 1);
+        renderPreviews();
+        if (!pickedFiles.length) fileInput.value = ''; // allow re-selecting same file
+      });
+
+      // ===== Small helper to POST files -> /upload.php =====
+      async function uploadPickedFiles(files){
+        if (!files.length) return [];
+        const fd = new FormData();
+        files.forEach(f => fd.append('files[]', f));
+        try{
+          const res = await fetch('upload.php', { method:'POST', body: fd });
+          const data = await res.json().catch(()=>({ ok:false, files:[] }));
+          return (data && data.ok && Array.isArray(data.files)) ? data.files : [];
+        }catch(_){
+          return []; // graceful if backend missing
+        }
+      }
+
+      // ===== EmailJS (safe if not configured) =====
+      const EMAILJS_PUBLIC_KEY  = '4AofNg1g8gtT5djjR';
+      const EMAILJS_SERVICE_ID  = 'service_5kn2qxg';
+      const EMAILJS_TEMPLATE_ID = 'template_x34h19l';
+
+      try {
+        if (window.emailjs && EMAILJS_PUBLIC_KEY && !EMAILJS_PUBLIC_KEY.startsWith('YOUR_')) {
+          window.emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+        }
+      } catch(e) { console.warn('EmailJS init skipped:', e); }
+
+      function safe(v, fallback='') { return (typeof v === 'string' && v.trim()) ? v.trim() : fallback; }
+
+      async function sendGreenUpEmail(entry){
+        if (!window.emailjs ||
+            EMAILJS_PUBLIC_KEY.startsWith('YOUR_') ||
+            EMAILJS_SERVICE_ID.startsWith('YOUR_') ||
+            EMAILJS_TEMPLATE_ID.startsWith('YOUR_')) return;
+
+        const d = entry.describe || {};
+        const payload = {
+          user:      safe(entry.user, 'guest'),
+          when:      safe(entry.when, new Date().toISOString()),
+          activity:  safe(d.activityType, '(no activity selected)'),
+          details:   safe(d.activityNote, '(no details)'),
+          school:    safe(d.schoolName, ''),
+          klass:     safe(d.className, ''),
+          fullname:  safe(d.fullName, ''),
+          files:     (entry.files || []).map(f => f.name).join(', '),
+          urls:      (entry.uploads || []).map(u => u.url).join('\n'),
+
+          from_name: safe(d.fullName, entry.user || 'guest'),
+          reply_to:  '',
+          message: [
+            `User: ${safe(entry.user,'guest')}`,
+            `Full name: ${safe(d.fullName,'')}`,
+            `Class: ${safe(d.className,'')}`,
+            `School: ${safe(d.schoolName,'')}`,
+            `Activity: ${safe(d.activityType,'')}`,
+            `Details: ${safe(d.activityNote,'')}`,
+            `Files: ${(entry.files||[]).map(f=>f.name).join(', ')}`,
+            `URLs:\n${(entry.uploads||[]).map(u=>u.url).join('\n')}`,
+            `When: ${safe(entry.when,'')}`
+          ].join('\n')
+        };
+        try { await window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, payload); }
+        catch(err){ console.warn('EmailJS send failed:', err); }
+      }
+
+      // ===== Achievements engine (basic) =====
+      const LS_ENTRIES = 'greenup_entries';
+      const LS_BADGES  = 'greenup_badges';
+
+      const ACTION_TO_BADGES = {
+        'Viết bài viết' : ['green_blogger'],
+        'Trồng cây'     : ['planter'],
+        'Nhặt rác'      : ['trash_collector'],
+        'Sử dụng túi vải': ['no_plastic_bag'],
+        'Chia sẻ'       : ['green_sharer'],
+        'Phân loại rác' : ['trash_sorter'],
+        'Tham gia CLB'  : ['eco_club'],
+        'Tạo postcard'  : ['postcaster'],
+        'Gây quỹ'       : ['fundraiser'],
+        'Sáng kiến'     : ['green_ideas'],
+        'Tạo dự án đổi đồ cũ lấy cây xanh': ['green_ideas'],
+        'Sáng lập CLB môi trường': ['green_leader'],
+        'Tham gia hành động bảo vệ môi trường': ['green_explorer'],
+        'Tạo sản phẩm'  : ['inventor_basic'],
+        'Nêu tên lên bản tin trường': ['green_student_basic'],
+        'Tổ chức sự kiện': ['event_creator_basic']
+      };
+
+      const loadJSON = (k, def) => { try { return JSON.parse(localStorage.getItem(k) || JSON.stringify(def)); } catch { return def; } };
+      const saveJSON = (k, v) => localStorage.setItem(k, JSON.stringify(v));
+
+      function computeStreak(entries){
+        const days = new Set(entries.map(e => (e.when || e.date || '').slice(0,10)).filter(Boolean));
+        if (days.size === 0) return 0;
+        let count = 0;
+        const d = new Date();
+        for (;;){
+          const key = d.toISOString().slice(0,10);
+          if (days.has(key)) { count++; d.setDate(d.getDate() - 1); }
+          else {
+            if (count === 0){
+              d.setDate(d.getDate() - 1);
+              const yKey = d.toISOString().slice(0,10);
+              if (days.has(yKey)) { count = 1; d.setDate(d.getDate() - 1); continue; }
+            }
+            break;
+          }
+        }
+        return count;
+      }
+
+      function awardBadgesForActivity(activity){
+        const earned  = loadJSON(LS_BADGES, {});
+        const want    = ACTION_TO_BADGES[activity] || [];
+        const entries = loadJSON(LS_ENTRIES, []);
+        if (entries.length === 1 && !earned.green_starter){ earned.green_starter = true; }
+        want.forEach(id => { if (!earned[id]) earned[id] = true; });
+
+        const streak = computeStreak(entries);
+        if (streak >= 7  && !earned.fire_week)   earned.fire_week   = true;
+        if (streak >= 30 && !earned.torch_month) earned.torch_month = true;
+        if (streak >= 90 && !earned.bonfire_q)   earned.bonfire_q   = true;
+
+        saveJSON(LS_BADGES, earned);
+      }
+
+      function refreshCounters(){
+        const badges = loadJSON(LS_BADGES, {});
+        const leafCount = Object.keys(badges).length;
+        const streak = computeStreak(loadJSON(LS_ENTRIES, []));
+        sessionStorage.setItem('greenup_count', String(leafCount));
+        sessionStorage.setItem('streak_count',   String(streak));
+
+        // Also update header immediately
+        const leafEl = document.getElementById('leafCount');
+        const streakEl = document.getElementById('streakCount');
+        if (leafEl) leafEl.textContent = leafCount;
+        if (streakEl) streakEl.textContent = streak;
+      }
+
+      // ===== Upload click: upload -> save -> email -> awards -> refresh =====
+      submit.addEventListener('click', async ()=>{
+        const user = (localStorage.getItem('greenup_user') ||
+                      sessionStorage.getItem('greenup_user') || 'guest');
+
+        // Require a name before upload (used by server/webapp)
+        const fullName = (describeData.fullName || describeData.hoTen || '').trim();
+        if (!fullName) {
+          alert('Vui lòng mở “Mô tả hoạt động” và nhập Họ và Tên trước khi UPLOAD.');
+          return;
+        }
+
+        submit.disabled = true; const oldTxt = submit.textContent; submit.textContent = 'UPLOADING…';
+
+        // 1) Upload to /uploads and collect URLs (graceful if backend missing)
+        const uploaded = await uploadPickedFiles(pickedFiles);
+
+        // 2) Save entry locally
+        const entry = {
+          user,
+          when: new Date().toISOString(),
+          describe: describeData,
+          files: (pickedFiles || []).map(f => ({ name: f.name, type: f.type, size: f.size })),
+          uploads: uploaded // [{name,type,size,url}]
+        };
+        const key = 'greenup_entries';
+        const arr = loadJSON(key, []);
+        arr.push(entry);
+        saveJSON(key, arr);
+
+        // 3) Email (optional)
+        await sendGreenUpEmail(entry);
+
+        // 4) Badges + counters
+        const act = (describeData && describeData.activityType) || '';
+        awardBadgesForActivity(act);
+        refreshCounters();
+
+        submit.textContent = oldTxt; submit.disabled = false;
+        alert('Đã lưu! (Thông tin được lưu cục bộ; tệp đã tải lên nếu server hỗ trợ upload.php)');
+        // Optional reset:
+        // form.reset(); describeData = {}; fileInput.value = ''; previews.innerHTML = '';
+      });
+
+      // Initial counters on page load
+      refreshCounters();
+    })();
+  </script>
+
+  <!-- ===== Auto-post each upload to GLOBAL leaderboard via Apps Script ===== -->
+<script>
+(function(){
+  const LB_ENDPOINT = 'https://script.google.com/macros/s/AKfycbxr2A9ed0w0UXV5bEr83DqyZQsKGivT3u3gs79I8a7RgKAyWEu4eiwHPl5oTXgjpggxQA/exec';
+  const CURSOR_KEY = 'lb_cursor_count';
+
+  async function sendLeaderboardFromEntry(entry){
+    if (!entry) return;
+    const d = entry.describe || {};
+    const name = (d.fullName || d.hoTen || d.name || '').trim();
+    if (!name) return;
+
+    const body = new URLSearchParams({
+      name,
+      when: entry.when || new Date().toISOString(),
+      activity: d.activityType || '',
+      note: d.activityNote || '',
+      user: entry.user || ''
+    }).toString();
+
+    try{
+      // Try both routing styles
+      let ok = false;
+      for (const url of [LB_ENDPOINT, LB_ENDPOINT + '?fn=leaderboard']){
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
+          body
+        });
+        if (r.ok) { ok = true; break; }
+      }
+      if (!ok) console.warn('POST to leaderboard did not return OK.');
+    }catch(err){
+      console.warn('POST to leaderboard failed:', err);
+    }
+  }
+
+  // Run AFTER the main click handler saved the entry locally
+  document.getElementById('submitEntry')?.addEventListener('click', ()=>{
+    const prev = parseInt(sessionStorage.getItem(CURSOR_KEY) || '0', 10);
+    setTimeout(async ()=>{
+      let arr = [];
+      try { arr = JSON.parse(localStorage.getItem('greenup_entries') || '[]'); } catch(_){}
+      if (arr.length > prev){
+        await sendLeaderboardFromEntry(arr[arr.length - 1]);
+        sessionStorage.setItem(CURSOR_KEY, String(arr.length));
+      }
+    }, 800);
+  });
+})();
+</script>
+
+  <!-- ===== /Auto-post ===== -->
+</body>
+</html>

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <!-- Google tag -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-HVVBRLHDV3');
+  </script>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Green Up — Tin Tức</title>
+
+  <link rel="stylesheet" href="css/style.css?v=news4" />
+  <script defer src="js/script.js?v=auth14news2"></script>
+
+  <style>
+    .news-wrap{width:min(1100px,95vw);margin:22px auto;}
+    .news-grid{display:grid;grid-template-columns:1fr;gap:16px}
+    .news-card{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .news-card img{width:100%;height:280px;object-fit:cover;border-radius:12px}
+    @media (max-width:760px){ .news-card{grid-template-columns:1fr} .news-card img{height:200px} }
+  </style>
+</head>
+<body class="has-bg">
+  <header class="topbar">
+    <a class="brand" href="frontpage.html" id="displayName">Tên nhóm here</a>
+    <div class="user-pane">
+      <img class="avatar" src="img/logo.png" alt="" />
+      <div class="user-meta">
+        <button id="userMenuBtn" class="user-trigger" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu">
+          <span id="headerUsername">Username</span>
+        </button>
+        <div class="user-stats">
+          <span class="stat"><img src="img/leaf.png" alt="" class="stat-icon"/><span id="leafCount">0</span></span>
+          <span class="stat"><img src="img/fire.png" alt="" class="stat-icon"/><span id="streakCount">0</span></span>
+        </div>
+      </div>
+      <div id="userMenu" class="user-menu" role="menu" aria-label="User menu">
+        <button id="logoutBtn" class="menu-item" role="menuitem" type="button">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <nav class="primary-nav" aria-label="Primary">
+    <a href="frontpage.html">Trang Chủ</a>
+    <a href="about-us.html">Giới Thiệu</a>
+    <a href="tin-tuc.html" aria-current="page">Tin Tức</a>
+    <a href="green-up.html">Green Up</a>
+    <a href="achievements.html">Huy Hiệu</a>
+    <a href="helpandcontact.html">Trợ Giúp &amp; Liên Hệ</a>
+  </nav>
+
+  <main class="news-wrap">
+    <section class="content-card">
+      <h2 style="margin:6px 2px 12px;letter-spacing:1px;">Trao tặng quà cho các bạn tích cực tham gia hoạt động Green Up</h2>
+
+      <div class="news-grid">
+        <article class="news-card">
+          <div>
+            <p>Hình ảnh phần quà dành cho các bạn tham gia tích cực dự án Green Up.</p>
+          </div>
+          <img src="img/news1.jpg?v=2" onerror="this.style.display='none'">
+        </article>
+
+        <article class="news-card">
+          <img src="img/news2.jpg?v=2" onerror="this.style.display='none'">
+          <div>
+            <p>Em <strong>Nguyễn Việt Dũng</strong> nhận quà từ dự án sau khi tích cực tham gia dự án đạt hạng nhì.</p>
+          </div>
+        </article>
+
+        <article class="news-card">
+          <div>
+            <p>Bạn <strong>Hoàng Ngọc Lan Vy</strong> nhận quà từ dự án sau khi tích cực tham gia dự án đạt hạng nhất.</p>
+          </div>
+          <img src="img/news3.jpg?v=2" onerror="this.style.display='none'">
+        </article>
+      </div>
+    </section>
+  </main>
+
+
+  <footer class="island-footer">
+    <div class="footer-left">
+      <nav class="footer-nav" aria-label="Footer">
+        <a href="frontpage.html">Trang chủ</a>
+        <a href="about-us.html">Giới Thiệu</a>
+        <a href="helpandcontact.html">Liên Hệ</a>
+      </nav>
+      <div class="footer-underline" aria-hidden="true"></div>
+      <div class="footer-school">THCS và THPT Trần Đại Nghĩa</div>
+    </div>
+    <div class="footer-contact">
+      <img class="phone-icon" src="img/call-icon.png" alt="">
+      <div><div class="contact-title">Liên Hệ</div><a class="tel" href="tel:0963705622">0963 705 622</a></div>
+    </div>
+  </footer>
+
+  <!-- visitCount -->
+  <script>
+  (function(){
+    if (!window.addTodayEntry) {
+      window.addTodayEntry = function(kind="visit"){
+        try{
+          const key='greenup_entries';
+          const list = JSON.parse(localStorage.getItem(key)||'[]');
+          const today = new Date().toISOString().slice(0,10);
+          const has = list.some(e => ((e?.when||e?.date)||'').slice(0,10)===today);
+          if (!has){ list.push({ when: today, kind }); localStorage.setItem(key, JSON.stringify(list)); }
+        }catch(_){}
+      };
+    }
+    try{
+      addTodayEntry('news-view');
+      const ev = new Event('storage'); ev.key='greenup_entries'; window.dispatchEvent(ev);
+    }catch(_){}
+  })();
+  </script>
+</body>
+</html>
