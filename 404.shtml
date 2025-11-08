@@ -101,7 +101,7 @@
     </div>
   </footer>
 
-  <!-- Shared behavior (fills username/counters, dropdown, etc.) -->
+  <!-- Shared behavior -->
   <script defer src="js/script.js?v=404a"></script>
 </body>
 </html>
