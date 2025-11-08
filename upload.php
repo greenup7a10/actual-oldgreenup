@@ -2,6 +2,13 @@
 // upload.php
 header('Content-Type: application/json; charset=utf-8');
 
+// Simple auth check
+if (!isset($_COOKIE['greenup_auth']) || $_COOKIE['greenup_auth'] !== 'true') {
+  http_response_code(403);
+  echo json_encode(['ok' => false, 'error' => 'Access denied']);
+  exit;
+}
+
 // Ensure uploads/ exists
 $targetDir = __DIR__ . '/uploads';
 if (!is_dir($targetDir)) mkdir($targetDir, 0755, true);
