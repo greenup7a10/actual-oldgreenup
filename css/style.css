@@ -283,7 +283,7 @@ body.has-bg .card:has(#loginForm) { /* modern browsers; safe no-op where unsuppo
   .site-logo{ width:44px; height:44px; }
 }
 
-/* thin green strip under header (unchanged look) */
+/* thin green strip under header */
 .hero-strip{
   width:100%; height:28px;
   background:linear-gradient(90deg,var(--brand-green-700),var(--brand-green-600));
@@ -324,7 +324,7 @@ body.has-bg .card:has(#loginForm) { /* modern browsers; safe no-op where unsuppo
 input:focus{ border-color:var(--brand-green-600); box-shadow:0 0 0 3px rgba(46,164,79,.25); }
 input[aria-invalid="true"]{ border-color:var(--error); box-shadow:0 0 0 3px rgba(217,48,37,.18); }
 
-/* show/hide password button – keep it visible everywhere */
+/* show/hide password button */
 .reveal{
   position:absolute; right:10px; top:50%; transform:translateY(-50%);
   min-width:38px; height:34px;
@@ -332,13 +332,12 @@ input[aria-invalid="true"]{ border-color:var(--error); box-shadow:0 0 0 3px rgba
   border:0; background:#e9eef2; border-radius:999px;
   padding:0 10px; cursor:pointer; font-size:16px;
 }
-/* if you’re using the two-state eye, both will be present */
+
 .reveal .eye-open{ display:inline; }
 .reveal[aria-pressed="true"] .eye-open{ display:none; }
 .reveal[aria-pressed="true"] .eye-covered{ display:inline; }
 
-/* footer island (unchanged, kept here for completeness) */
-/* ===== Login page — modern flat polish (index-only) ===== */
+/* ===== Login page — modern ===== */
 .login-main{
   width:min(1100px,95vw);
   margin:22px auto 0;
@@ -446,7 +445,7 @@ input[aria-invalid="true"]{ border-color:var(--error); box-shadow:0 0 0 3px rgba
 .login-btn:active{ transform:translateY(1px); }
 .login-btn:disabled{ opacity:.6; cursor:not-allowed; filter:grayscale(1); }
 
-/* Keep your shake for wrong login */
+/* Login shake */
 @keyframes gu-shake{
   0%{transform:translateX(0)}
   20%{transform:translateX(-5px)}
@@ -462,7 +461,7 @@ input[aria-invalid="true"]{ border-color:var(--error); box-shadow:0 0 0 3px rgba
   .toggle-pw,.login-btn,.field input{ transition:none; }
   .shake{ animation:none; }
 }
-/* === ADD-ONLY: record a daily visit so streak updates automatically === */
+/* === record a daily visit so streak updates automatically === */
 function addTodayEntry(kind="visit"){
   try{
     const list = loadEntries();
