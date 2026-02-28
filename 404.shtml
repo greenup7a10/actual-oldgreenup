@@ -8,7 +8,7 @@
   <!-- Global styles -->
   <link rel="stylesheet" href="css/style.css?v=404a" />
 
-  <!-- tweaks -->
+  <!-- Page-scoped tweaks -->
   <style>
     .err-wrap{width:min(1100px,95vw);margin:22px auto 0;}
     .err-card{
@@ -37,6 +37,7 @@
 <body class="has-bg">
   <!-- Header -->
   <header class="topbar">
+    <!-- Display name uses normal font per your CSS (#displayName rule) -->
     <a class="brand" id="displayName" href="frontpage.html">Tên nhóm here</a>
 
     <div class="user-pane">
@@ -101,7 +102,7 @@
     </div>
   </footer>
 
-  <!-- Shared behavior -->
+  <!-- Shared behavior (fills username/counters, dropdown, etc.) -->
   <script defer src="js/script.js?v=404a"></script>
 </body>
 </html>

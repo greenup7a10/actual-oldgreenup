@@ -1,0 +1,886 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Auto Accompaniment (VN Styles + Transpose)</title>
+  <style>
+    :root { color-scheme: dark; }
+    body{ margin:0; font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; background:#0b0d12; color:#e9eefc; }
+    .wrap{ max-width: 1120px; margin: 0 auto; padding: 18px; }
+    .card{
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+    }
+    h1{ font-size: 18px; margin: 0 0 10px; letter-spacing: .2px; }
+    .grid{ display:grid; gap:12px; grid-template-columns: 1.2fr .8fr; }
+    @media (max-width: 860px){ .grid{ grid-template-columns: 1fr; } }
+    .row{ display:flex; gap:10px; align-items:center; flex-wrap: wrap; }
+    label{ font-size: 12px; opacity:.9; }
+    select, button, input[type="range"]{
+      background: rgba(255,255,255,0.07);
+      color: #e9eefc;
+      border: 1px solid rgba(255,255,255,0.14);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+    }
+    button{ cursor:pointer; transition: transform .05s ease; user-select:none; font-weight: 800; }
+    button:active{ transform: scale(0.98); }
+    .pill{
+      padding: 8px 10px; border-radius: 999px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.12);
+      font-size: 12px;
+      display:inline-flex; gap:8px; align-items:center;
+    }
+    .big{
+      font-size: 30px; font-weight: 900; letter-spacing: .5px;
+      padding: 14px 16px; border-radius: 16px;
+      background: rgba(0,0,0,0.22);
+      border: 1px solid rgba(255,255,255,0.12);
+      line-height: 1.2;
+    }
+    .subbig{ font-size: 12px; opacity: .85; margin-top: 6px; }
+    .hint{ font-size: 12px; opacity: 0.9; line-height: 1.45; }
+    kbd{
+      font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace;
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+    .map{ display:grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 10px; }
+    @media (max-width: 640px){ .map{ grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    .map .pill{ justify-content: space-between; }
+    .warn{ color:#ffd38a; }
+    .ok{ color:#9bffbb; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Auto Accompaniment — Copyright: STEAM+ (smstechnologyglobal@gmail.com) </h1>
+
+      <div class="grid">
+        <div>
+          <div class="row">
+            <button id="btnStart">Start</button>
+            <button id="btnStop">Stop</button>
+
+            <span class="pill" title="Trình duyệt cần click để bật âm thanh.">
+              <span>Audio:</span><strong id="audioState" class="warn">stopped</strong>
+            </span>
+
+            <span class="pill"><span>Bar:</span><strong id="barCount">1</strong></span>
+            <span class="pill"><span>Step:</span><strong id="stepCount">1</strong><span>/16</span></span>
+
+            <span class="pill"><span>Toggle:</span><strong><kbd>Space</kbd></strong></span>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <label for="styleSel">Điệu (Style)</label>
+            <select id="styleSel"></select>
+
+            <label for="tempo">Tempo</label>
+            <input id="tempo" type="range" min="40" max="220" value="110" />
+            <span class="pill"><span>BPM</span><strong id="bpmOut">110</strong></span>
+
+            <label for="swing">Swing</label>
+            <input id="swing" type="range" min="0" max="70" value="15" />
+            <span class="pill"><span>%</span><strong id="swingOut">15</strong></span>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <button id="btnTransDown" title="Transpose -1 (phím [)">Transpose -</button>
+            <button id="btnTransUp" title="Transpose +1 (phím ])">Transpose +</button>
+
+            <span class="pill" title="Nâng/giảm nửa cung">
+              <span>Transpose:</span>
+              <strong id="transOut">0</strong><span>semitones</span>
+            </span>
+
+            <span class="pill" title="Capo nhanh: ' = 0, 1..9 = 1..9, 0 = 10, - = 11">
+              <span>Capo:</span>
+              <strong id="capoOut">0</strong>
+              <span>(</span><strong><kbd>'</kbd><kbd>1</kbd>…<kbd>-</kbd></strong><span>)</span>
+            </span>
+
+            <span class="pill"><span><kbd>[</kbd>/<kbd>]</kbd></span><span>nửa cung</span></span>
+          </div>
+
+          <div class="row" style="margin-top:12px;">
+            <span class="pill"><span>Chord (base):</span> <strong id="chordBase" class="ok">Cmaj</strong></span>
+            <span class="pill"><span>Chord (sound):</span> <strong id="chordNow" class="ok">Cmaj</strong></span>
+            <span class="pill"><span>Next:</span> <strong id="chordNext">—</strong></span>
+          </div>
+
+          <div class="hint" style="margin-top:12px;">
+            - <b>Space</b> bật/tắt nhanh.<br/>
+            - Đổi hợp âm: F/R/V/A/Q/Z/X/B/D/S.<br/>
+            - Transpose: <kbd>[</kbd> xuống 1 nửa cung, <kbd>]</kbd> lên 1 nửa cung.<br/>
+            - Capo nhanh: <kbd>'</kbd>=0, <kbd>1..9</kbd>=1..9, <kbd>0</kbd>=10, <kbd>-</kbd>=11 (nâng từ tông gốc không thăng giáng).
+          </div>
+
+          <div class="map" id="keyMap"></div>
+        </div>
+
+        <div>
+          <div class="big">
+            <div id="bigChord">Cmaj</div>
+            <div class="subbig">
+              Base: <span id="bigBase">Cmaj</span> · Transpose: <span id="bigTrans">0</span>
+            </div>
+          </div>
+
+          <div class="hint" style="margin-top:10px;">
+            Map phím:
+            <div style="margin-top:8px;">
+              <div class="pill"><span><kbd>F</kbd></span><span>Cmaj</span></div>
+              <div class="pill"><span><kbd>R</kbd></span><span>Fmaj</span></div>
+              <div class="pill"><span><kbd>V</kbd></span><span>Gmaj</span></div>
+              <div class="pill"><span><kbd>A</kbd></span><span>Am</span></div>
+              <div class="pill"><span><kbd>Q</kbd></span><span>Dm</span></div>
+              <div class="pill"><span><kbd>Z</kbd></span><span>Em</span></div>
+              <div class="pill"><span><kbd>X</kbd></span><span>E7</span></div>
+              <div class="pill"><span><kbd>B</kbd></span><span>G7</span></div>
+              <div class="pill"><span><kbd>D</kbd></span><span>Bm7b5</span></div>
+              <div class="pill"><span><kbd>S</kbd></span><span>Bbmaj</span></div>
+            </div>
+          </div>
+
+          <div class="hint warn" style="margin-top:12px;">
+            “Blue” mình hiểu là <b>Blues</b>. “Quạt chả ballad guitar” mình làm kiểu <b>strum guitar</b> (down/up stroke).
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+(() => {
+  // ----------------------------
+  // Key → chord mapping (base chords)
+  // ----------------------------
+  const KEY_TO_CHORD = {
+    f: "Cmaj",
+    r: "Fmaj",
+    v: "Gmaj",
+    a: "Am",
+    q: "Dm",
+    z: "Em",
+    x: "E7",
+    b: "G7",
+    d: "Bm7b5",
+    s: "Bbmaj",
+  };
+
+  // Capo quick mapping: ' 1..9 0 -
+  const KEY_TO_CAPO = {
+    "'": 0,
+    "1": 1, "2": 2, "3": 3, "4": 4, "5": 5,
+    "6": 6, "7": 7, "8": 8, "9": 9,
+    "0": 10,
+    "-": 11
+  };
+
+  // Build UI key map
+  const keyMapEl = document.getElementById("keyMap");
+  for (const [k, chord] of Object.entries(KEY_TO_CHORD)) {
+    const pill = document.createElement("div");
+    pill.className = "pill";
+    pill.innerHTML = `<span><kbd>${k.toUpperCase()}</kbd></span><span>${chord}</span>`;
+    keyMapEl.appendChild(pill);
+  }
+
+  // ----------------------------
+  // Styles (16-step patterns, 4/4)
+  // tokens:
+  // drum[]: "k" kick, "h" closed hat, "H" open hat, "p" perc (rim/clave), "t" tom-ish
+  // snare[]: "s" snare/clap
+  // bass[]: "b" bass hit
+  // chord[]: "c" chord stab, "d" down-strum, "u" up-strum
+  // ----------------------------
+  const STYLES = [
+    // VN-friendly core
+    {
+      id: "ballad",
+      name: "Ballad VN (pop 8-beat)",
+      drum:  ["k","h","h","h", "", "h","h","h", "k","h","h","h", "", "h","h","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "", "","b","", "b","","","", "", "","b",""],
+      chord: ["d","","","", "", "","u","", "d","","","", "", "","u",""],
+      swingOn: false
+    },
+    {
+      id: "bolero",
+      name: "Bolero",
+      drum:  ["k","h","","h", "","h","","h", "k","h","","h", "","h","","h"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","b","", "","", "b","", "b","","b","", "","", "b",""],
+      chord: ["d","","","u", "","u","","", "d","","","u", "","u","",""],
+      swingOn: true
+    },
+    {
+      id: "valse",
+      name: "Valse / Waltz (3/4 feel)",
+      drum:  ["k","h","h","", "k","h","h","", "k","h","h","", "","h","","h"],
+      snare: ["","","","", "","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","b","","", "","b","","", "b","","",""],
+      chord: ["d","","u","", "d","","u","", "d","","u","", "","u","",""],
+      swingOn: true
+    },
+    {
+      id: "rumba",
+      name: "Rumba",
+      drum:  ["k","h","","h", "","h","k","h", "","h","","h", "k","h","","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","b","","", "b","","","", "","b","",""],
+      chord: ["","d","","", "u","","d","", "","d","","", "u","","d",""],
+      swingOn: false
+    },
+    {
+      id: "chacha",
+      name: "Cha-cha-cha",
+      drum:  ["k","h","p","h", "","h","p","h", "k","h","p","h", "","h","p","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","b", "","b","","", "b","","","b", "","b","",""],
+      chord: ["","d","","u", "d","","u","", "","d","","u", "d","","u",""],
+      swingOn: false
+    },
+    {
+      id: "disco",
+      name: "Disco",
+      drum:  ["k","h","h","h","k","h","h","h","k","h","h","h","k","h","H","h"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","", "b","", "b","","","", "","", "b",""],
+      chord: ["","c","","", "","c","","", "","c","","", "","c","",""],
+      swingOn: false
+    },
+    {
+      id: "fox",
+      name: "Fox (Foxtrot)",
+      drum:  ["k","h","","h", "k","h","","h", "k","h","","h", "k","h","","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "b","","","", "b","","","", "b","","",""],
+      chord: ["d","","","", "","u","","", "d","","","", "","u","",""],
+      swingOn: true
+    },
+    {
+      id: "boston",
+      name: "Boston (slow foxtrot)",
+      drum:  ["k","h","","", "","h","","h", "k","h","","", "","h","","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","", "b","", "b","","","", "","", "b",""],
+      chord: ["d","","","", "","u","","", "d","","","", "","u","",""],
+      swingOn: true
+    },
+    {
+      id: "hanabera",
+      name: "Hanabera (JP-pop-ish)",
+      drum:  ["k","h","p","h", "","h","p","h", "k","h","p","h", "","h","p","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","b","","", "b","","","", "","b","",""],
+      chord: ["d","","","", "","u","","", "d","","","", "","u","",""],
+      swingOn: false
+    },
+
+    // Added requested styles
+    {
+      id: "slowrock",
+      name: "Slow Rock",
+      drum:  ["k","h","h","", "","h","h","", "k","h","h","", "","h","h","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","", "b","", "b","","","", "","", "b",""],
+      chord: ["d","","","", "","u","","", "d","","","", "","u","",""],
+      swingOn: false
+    },
+    {
+      id: "blues",
+      name: "Blues (shuffle feel)",
+      // approximate 12/8 by swinging the off-16ths
+      drum:  ["k","h","","h", "","h","","h", "k","h","","h", "","h","","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","b", "","", "b","", "b","","","b", "","", "b",""],
+      chord: ["","c","","", "c","","","", "","c","","", "c","","",""],
+      swingOn: true
+    },
+    {
+      id: "slowsurf",
+      name: "Slow Surf (retro)",
+      drum:  ["k","h","h","t", "","h","h","t", "k","h","h","t", "","h","h","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "b","","","", "b","","","", "b","","",""],
+      chord: ["d","","","u", "","u","","", "d","","","u", "","u","",""],
+      swingOn: false
+    },
+    {
+      id: "quatballad",
+      name: "Quạt chả Ballad Guitar (strum)",
+      // dense down/up strums like guitar accompaniment
+      drum:  ["k","h","","h", "","h","","h", "k","h","","h", "","h","","H"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","b","","", "b","","","", "","b","",""],
+      chord: ["d","","u","u", "d","","u","u", "d","","u","u", "d","","u","u"],
+      swingOn: false
+    },
+
+    // extra useful defaults
+    {
+      id: "pop",
+      name: "Pop (4-on-the-floor)",
+      drum:  ["k","h","h","h","k","h","h","h","k","h","h","h","k","h","h","h"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","", "","", "b","", "b","","","", "","", "b",""],
+      chord: ["c","","","", "","", "","", "c","","","", "","", "",""],
+      swingOn: false
+    },
+    {
+      id: "rock",
+      name: "Rock (backbeat)",
+      drum:  ["k","h","h","h", "","h","h","h", "k","h","h","h", "","h","h","h"],
+      snare: ["","","","", "s","","","", "","","","", "s","","",""],
+      bass:  ["b","","","b", "","","","", "b","","","b", "","","",""],
+      chord: ["d","","","", "","u","d","", "d","","","", "","u","d",""],
+      swingOn: false
+    }
+  ];
+
+  // ----------------------------
+  // Notes + chord parsing
+  // ----------------------------
+  const NOTE_TO_SEMI = {
+    C:0,"C#":1,Db:1, D:2,"D#":3,Eb:3, E:4,
+    F:5,"F#":6,Gb:6, G:7,"G#":8,Ab:8, A:9,"A#":10,Bb:10, B:11
+  };
+
+  // Prefer this spelling when generating transposed names (keeps Bb/Ab/Eb style)
+  const SEMI_TO_NOTE = ["C","C#","D","Eb","E","F","F#","G","Ab","A","Bb","B"];
+
+  function midiToHz(midi){ return 440 * Math.pow(2, (midi - 69) / 12); }
+
+  function parseChordName(name){
+    const m = name.match(/^([A-G])([#b]?)(.*)$/);
+    if(!m) throw new Error("Bad chord: " + name);
+    const root = m[1] + (m[2] || "");
+    const qual = (m[3] || "").trim();
+    if(!(root in NOTE_TO_SEMI)) throw new Error("Bad root: " + root);
+
+    let intervals;
+    if (qual === "maj" || qual === "") intervals = [0,4,7];
+    else if (qual === "m") intervals = [0,3,7];
+    else if (qual === "7") intervals = [0,4,7,10];
+    else if (qual === "m7b5") intervals = [0,3,6,10];
+    else throw new Error("Unsupported quality: " + qual);
+
+    return { root, qual, intervals };
+  }
+
+  function normalizeSemis(n){
+    let x = n % 12;
+    if (x < 0) x += 12;
+    return x;
+  }
+
+  function transposeChordName(chordName, semis){
+    const { root, qual } = parseChordName(chordName);
+    const rootSemi = NOTE_TO_SEMI[root];
+    const newSemi = normalizeSemis(rootSemi + semis);
+    const newRoot = SEMI_TO_NOTE[newSemi];
+    return newRoot + qual; // keep same quality label
+  }
+
+  // ----------------------------
+  // Global transpose (capo) state
+  // ----------------------------
+  let transposeSemis = 0; // 0..11 but allow negative via [ ]
+  function setTranspose(semi){
+    // keep it in a sane range but allow negatives; show capo as 0..11
+    transposeSemis = semi;
+    updateTransposeUI();
+    // refresh displayed chord names
+    refreshChordUI();
+  }
+
+  function capoValue(){
+    return normalizeSemis(transposeSemis); // 0..11
+  }
+
+  // ----------------------------
+  // Audio engine
+  // ----------------------------
+  let ac = null;
+  let master = null;
+
+  let isRunning = false;
+  let currentStep = 0; // 0..15
+  let bar = 1;
+
+  let bpm = 110;
+  let swing = 0.15; // 0..0.70
+  let style = STYLES[0];
+
+  // base chord (what you pressed) + pending base chord
+  let chordBaseNow = "Cmaj";
+  let chordBasePending = null;
+
+  const lookaheadMs = 25;
+  const scheduleAheadSec = 0.12;
+  let nextNoteTime = 0;
+  let timerId = null;
+
+  // UI
+  const btnStart = document.getElementById("btnStart");
+  const btnStop  = document.getElementById("btnStop");
+  const audioStateEl = document.getElementById("audioState");
+  const barCountEl = document.getElementById("barCount");
+  const stepCountEl = document.getElementById("stepCount");
+  const chordBaseEl = document.getElementById("chordBase");
+  const chordNowEl = document.getElementById("chordNow");
+  const chordNextEl = document.getElementById("chordNext");
+
+  const bigChordEl = document.getElementById("bigChord");
+  const bigBaseEl = document.getElementById("bigBase");
+  const bigTransEl = document.getElementById("bigTrans");
+
+  const tempoEl = document.getElementById("tempo");
+  const bpmOutEl = document.getElementById("bpmOut");
+  const swingEl = document.getElementById("swing");
+  const swingOutEl = document.getElementById("swingOut");
+
+  const styleSel = document.getElementById("styleSel");
+  const btnTransDown = document.getElementById("btnTransDown");
+  const btnTransUp = document.getElementById("btnTransUp");
+  const transOut = document.getElementById("transOut");
+  const capoOut = document.getElementById("capoOut");
+
+  for (const s of STYLES) {
+    const opt = document.createElement("option");
+    opt.value = s.id;
+    opt.textContent = s.name;
+    styleSel.appendChild(opt);
+  }
+  styleSel.value = style.id;
+
+  function setAudioState(txt, ok){
+    audioStateEl.textContent = txt;
+    audioStateEl.className = ok ? "ok" : "warn";
+  }
+
+  function ensureAudio(){
+    if(ac) return;
+    ac = new (window.AudioContext || window.webkitAudioContext)();
+    master = ac.createGain();
+    master.gain.value = 0.55;
+    master.connect(ac.destination);
+  }
+
+  // --- Pitch helpers (apply transpose to root) ---
+  function chordMidisFromBase(baseChordName, chordOctaveMidi = 60){
+    const { root, intervals } = parseChordName(baseChordName);
+    const rootSemi = NOTE_TO_SEMI[root];
+    const transSemi = normalizeSemis(rootSemi + transposeSemis);
+
+    // choose a root near chordOctaveMidi with semitone = transSemi
+    const base = chordOctaveMidi - ((chordOctaveMidi % 12) - transSemi);
+    let rootMidi = base;
+    while (rootMidi < 52) rootMidi += 12;
+    while (rootMidi > 72) rootMidi -= 12;
+
+    return intervals.map(i => rootMidi + i);
+  }
+
+  function bassMidiFromBase(baseChordName, bassOctaveMidi = 40){
+    const { root } = parseChordName(baseChordName);
+    const rootSemi = NOTE_TO_SEMI[root];
+    const transSemi = normalizeSemis(rootSemi + transposeSemis);
+
+    const base = bassOctaveMidi - ((bassOctaveMidi % 12) - transSemi);
+    let rootMidi = base;
+    while (rootMidi < 28) rootMidi += 12;
+    while (rootMidi > 52) rootMidi -= 12;
+    return rootMidi;
+  }
+
+  function chordSoundName(){
+    return transposeChordName(chordBaseNow, transposeSemis);
+  }
+
+  function pendingSoundName(){
+    if (!chordBasePending) return null;
+    return transposeChordName(chordBasePending, transposeSemis);
+  }
+
+  // --- Drum synths ---
+  function playKick(time){
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(140, time);
+    o.frequency.exponentialRampToValueAtTime(50, time + 0.09);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(0.9, time + 0.005);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.12);
+    o.connect(g).connect(master);
+    o.start(time); o.stop(time + 0.15);
+  }
+
+  function playSnare(time){
+    const noiseBuf = ac.createBuffer(1, ac.sampleRate * 0.2, ac.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for (let i=0;i<data.length;i++) data[i] = (Math.random()*2-1);
+
+    const noise = ac.createBufferSource();
+    noise.buffer = noiseBuf;
+
+    const hp = ac.createBiquadFilter();
+    hp.type = "highpass";
+    hp.frequency.value = 1100;
+
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(0.65, time + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.12);
+
+    noise.connect(hp).connect(g).connect(master);
+    noise.start(time); noise.stop(time + 0.14);
+
+    const o = ac.createOscillator();
+    const og = ac.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(180, time);
+    og.gain.setValueAtTime(0.0001, time);
+    og.gain.exponentialRampToValueAtTime(0.25, time + 0.003);
+    og.gain.exponentialRampToValueAtTime(0.0001, time + 0.07);
+    o.connect(og).connect(master);
+    o.start(time); o.stop(time + 0.09);
+  }
+
+  function playHat(time, open=false){
+    const len = open ? 0.35 : 0.12;
+    const noiseBuf = ac.createBuffer(1, ac.sampleRate * len, ac.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for (let i=0;i<data.length;i++) data[i] = (Math.random()*2-1);
+
+    const noise = ac.createBufferSource();
+    noise.buffer = noiseBuf;
+
+    const bp = ac.createBiquadFilter();
+    bp.type = "bandpass";
+    bp.frequency.value = 8500;
+    bp.Q.value = 0.9;
+
+    const g = ac.createGain();
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(open ? 0.24 : 0.18, time + 0.002);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + (open ? 0.25 : 0.06));
+
+    noise.connect(bp).connect(g).connect(master);
+    noise.start(time); noise.stop(time + (open ? 0.28 : 0.09));
+  }
+
+  function playPerc(time){
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = "square";
+    o.frequency.setValueAtTime(2200, time);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(0.12, time + 0.001);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.03);
+    o.connect(g).connect(master);
+    o.start(time); o.stop(time + 0.04);
+  }
+
+  function playTom(time){
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(220, time);
+    o.frequency.exponentialRampToValueAtTime(120, time + 0.08);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(0.35, time + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.12);
+    o.connect(g).connect(master);
+    o.start(time); o.stop(time + 0.14);
+  }
+
+  // --- Bass + chord synths ---
+  function playBass(time, baseChordName, accent=false){
+    const midi = bassMidiFromBase(baseChordName, 40);
+    const f = midiToHz(midi);
+
+    const o = ac.createOscillator();
+    const g = ac.createGain();
+    const lp = ac.createBiquadFilter();
+
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(f, time);
+
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(accent ? 900 : 700, time);
+    lp.Q.value = 0.9;
+
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(accent ? 0.40 : 0.28, time + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.22);
+
+    o.connect(lp).connect(g).connect(master);
+    o.start(time); o.stop(time + 0.26);
+  }
+
+  function playChordStab(time, baseChordName, stab=true){
+    const midis = chordMidisFromBase(baseChordName, 60);
+    const baseGain = stab ? 0.22 : 0.14;
+    const dur = stab ? 0.22 : 0.45;
+
+    const sum = ac.createGain();
+    sum.gain.setValueAtTime(0.0001, time);
+    sum.gain.exponentialRampToValueAtTime(baseGain, time + 0.01);
+    sum.gain.exponentialRampToValueAtTime(0.0001, time + dur);
+
+    const lp = ac.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(stab ? 1800 : 1300, time);
+    lp.Q.value = 0.7;
+
+    sum.connect(lp).connect(master);
+
+    for (const m of midis) {
+      const o = ac.createOscillator();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(midiToHz(m), time);
+      o.detune.setValueAtTime((Math.random()*8)-4, time);
+      o.connect(sum);
+      o.start(time); o.stop(time + dur + 0.02);
+    }
+  }
+
+  function playStrum(time, baseChordName, direction /* "down" | "up" */){
+    const midis = chordMidisFromBase(baseChordName, 60);
+    const notes = direction === "up" ? [...midis].reverse() : midis;
+
+    const sum = ac.createGain();
+    sum.gain.setValueAtTime(0.0001, time);
+    sum.gain.exponentialRampToValueAtTime(0.16, time + 0.01);
+    sum.gain.exponentialRampToValueAtTime(0.0001, time + 0.35);
+
+    const lp = ac.createBiquadFilter();
+    lp.type = "lowpass";
+    lp.frequency.setValueAtTime(1500, time);
+    lp.Q.value = 0.8;
+    sum.connect(lp).connect(master);
+
+    const perNote = 0.012; // strum spread
+    notes.forEach((m, idx) => {
+      const t = time + idx * perNote;
+      const o = ac.createOscillator();
+      o.type = "triangle";
+      o.frequency.setValueAtTime(midiToHz(m), t);
+      o.detune.setValueAtTime((Math.random()*10)-5, t);
+      o.connect(sum);
+      o.start(t);
+      o.stop(time + 0.38);
+    });
+  }
+
+  // ----------------------------
+  // Timing / scheduler
+  // ----------------------------
+  function secondsPer16th(){ return (60 / bpm) / 4; }
+
+  function stepTimeWithSwing(stepIndex, baseTime){
+    const swingAmount = (style.swingOn ? swing : 0);
+    const isSwung = (stepIndex % 4 === 2); // 2,6,10,14
+    if(!isSwung) return baseTime;
+    return baseTime + secondsPer16th() * swingAmount;
+  }
+
+  function applyPendingChordAtStepBoundary(){
+    if (!chordBasePending) return;
+    chordBaseNow = chordBasePending;
+    chordBasePending = null;
+    chordNextEl.textContent = "—";
+    refreshChordUI();
+  }
+
+  function scheduleStep(stepIndex, time){
+    // apply base chord change at step boundary
+    applyPendingChordAtStepBoundary();
+
+    const d = style.drum[stepIndex] || "";
+    const s = style.snare[stepIndex] || "";
+    const b = style.bass[stepIndex] || "";
+    const c = style.chord[stepIndex] || "";
+
+    if (d.includes("k")) playKick(time);
+    if (s.includes("s")) playSnare(time);
+    if (d.includes("h")) playHat(time, false);
+    if (d.includes("H")) playHat(time, true);
+    if (d.includes("p")) playPerc(time);
+    if (d.includes("t")) playTom(time);
+
+    if (b.includes("b")) playBass(time, chordBaseNow, stepIndex === 0 || stepIndex === 8);
+
+    if (c.includes("c")) playChordStab(time, chordBaseNow, true);
+    if (c.includes("d")) playStrum(time, chordBaseNow, "down");
+    if (c.includes("u")) playStrum(time, chordBaseNow, "up");
+
+    stepCountEl.textContent = String(stepIndex + 1);
+  }
+
+  function scheduler(){
+    if(!isRunning) return;
+    while (nextNoteTime < ac.currentTime + scheduleAheadSec) {
+      const t = stepTimeWithSwing(currentStep, nextNoteTime);
+      scheduleStep(currentStep, t);
+
+      nextNoteTime += secondsPer16th();
+      currentStep++;
+
+      if(currentStep >= 16){
+        currentStep = 0;
+        bar++;
+        barCountEl.textContent = String(bar);
+      }
+    }
+  }
+
+  function start(){
+    ensureAudio();
+    ac.resume();
+
+    if(isRunning) return;
+    isRunning = true;
+
+    bar = 1;
+    currentStep = 0;
+    nextNoteTime = ac.currentTime + 0.06;
+
+    barCountEl.textContent = "1";
+    stepCountEl.textContent = "1";
+    setAudioState("running", true);
+
+    timerId = setInterval(scheduler, lookaheadMs);
+  }
+
+  function stop(){
+    isRunning = false;
+    if(timerId) clearInterval(timerId);
+    timerId = null;
+    setAudioState("stopped", false);
+  }
+
+  function toggleStartStop(){
+    if(isRunning) stop();
+    else start();
+  }
+
+  // ----------------------------
+  // UI refresh
+  // ----------------------------
+  function updateTransposeUI(){
+    transOut.textContent = String(transposeSemis);
+    capoOut.textContent = String(capoValue());
+    bigTransEl.textContent = String(transposeSemis);
+  }
+
+  function refreshChordUI(){
+    const sound = chordSoundName();
+    chordBaseEl.textContent = chordBaseNow;
+    chordNowEl.textContent = sound;
+    bigChordEl.textContent = sound;
+    bigBaseEl.textContent = chordBaseNow;
+
+    const pending = pendingSoundName();
+    chordNextEl.textContent = pending ? pending : "—";
+  }
+
+  // ----------------------------
+  // UI handlers
+  // ----------------------------
+  btnStart.addEventListener("click", start);
+  btnStop.addEventListener("click", stop);
+
+  tempoEl.addEventListener("input", () => {
+    bpm = Number(tempoEl.value);
+    bpmOutEl.textContent = String(bpm);
+  });
+
+  swingEl.addEventListener("input", () => {
+    swing = Number(swingEl.value) / 100;
+    swingOutEl.textContent = String(swingEl.value);
+  });
+
+  styleSel.addEventListener("change", () => {
+    style = STYLES.find(s => s.id === styleSel.value) || STYLES[0];
+  });
+
+  btnTransDown.addEventListener("click", () => setTranspose(transposeSemis - 1));
+  btnTransUp.addEventListener("click", () => setTranspose(transposeSemis + 1));
+
+  // ----------------------------
+  // Keyboard controls
+  // ----------------------------
+  window.addEventListener("keydown", (e) => {
+    const key = (e.key ?? "").toLowerCase();
+
+    // SPACE toggles start/stop
+    if (key === " " || key === "spacebar") {
+      e.preventDefault();
+      toggleStartStop();
+      return;
+    }
+
+    // transpose step: [ down, ] up
+    if (e.key === "[") {
+      e.preventDefault();
+      if (!e.repeat) setTranspose(transposeSemis - 1);
+      return;
+    }
+    if (e.key === "]") {
+      e.preventDefault();
+      if (!e.repeat) setTranspose(transposeSemis + 1);
+      return;
+    }
+
+    // quick capo set: ' 1..9 0 -
+    if (key in KEY_TO_CAPO) {
+      e.preventDefault();
+      if (e.repeat) return;
+      setTranspose(KEY_TO_CAPO[key]); // set directly to 0..11
+      return;
+    }
+
+    // chord change (ignore repeats)
+    if (e.repeat) return;
+    if (!(key in KEY_TO_CHORD)) return;
+
+    const targetBaseChord = KEY_TO_CHORD[key];
+
+    // not running: update immediately
+    if (!isRunning || !ac) {
+      chordBaseNow = targetBaseChord;
+      chordBasePending = null;
+      refreshChordUI();
+      return;
+    }
+
+    // running: schedule next step boundary
+    chordBasePending = targetBaseChord;
+    refreshChordUI();
+  });
+
+  // Initial UI
+  bpmOutEl.textContent = String(bpm);
+  swingOutEl.textContent = String(Math.round(swing * 100));
+  updateTransposeUI();
+  refreshChordUI();
+  setAudioState("stopped", false);
+})();
+</script>
+</body>
+</html>

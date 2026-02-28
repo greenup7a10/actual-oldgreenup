@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>tuff game</title>
+<style>
+  :root { color-scheme: light dark; }
+  html, body {
+    height: 100%; margin: 0;
+    background: linear-gradient(180deg, #6ed0f6 0%, #b8eaff 55%, #ffffff 100%);
+    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    user-select: none; touch-action: none;
+  }
+  .wrap { height: 100%; display: grid; place-items: center; }
+  canvas {
+    width: min(100vw, 540px);
+    height: calc(min(100vw, 540px) * 16 / 9);
+    max-height: 96vh;
+    background: transparent;
+    display: block;
+    border-radius: 14px;
+    box-shadow: 0 10px 40px rgba(0,0,0,.18);
+  }
+  .hint {
+    position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; opacity: .7; text-align: center;
+  }
+
+  /* === UI: Scoreboard + Name Entry === */
+  .ui { position: fixed; inset: 0; pointer-events: none; }
+  .floating {
+    pointer-events: auto; position: fixed; left: 12px; bottom: 12px;
+    border: 0; border-radius: 999px; padding: 10px 14px;
+    font-weight: 600; box-shadow: 0 6px 22px rgba(0,0,0,.18);
+    background: rgba(255,255,255,0.88);
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    cursor: pointer;
+  }
+  .backdrop {
+    position: fixed; inset: 0;
+    background: transparent;                  /* no dim */
+    -webkit-backdrop-filter: none; backdrop-filter: none;
+    pointer-events: auto;
+  }
+  .panel { pointer-events: auto; position: fixed; inset: 0; display: grid; place-items: center; }
+  .card {
+    width: min(92vw, 520px); background: #fff; color: #222;
+    border-radius: 16px; padding: 18px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+  }
+  .card h2 { margin: 0 0 10px 0; }
+  .row { display: flex; gap: 8px; align-items: center; margin-top: 12px; }
+  .btn, .input { border-radius: 12px; border: 1px solid #e5e7eb; padding: 10px 12px; font-size: 14px; }
+  .btn { background: #111; color: #fff; cursor: pointer; border: 0; }
+  .btn.ghost { background: #f2f2f2; color: #111; }
+  .input { flex: 1; outline: none; }
+  .score-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+  .score-table th, .score-table td {
+    text-align: left; padding: 8px 6px; border-bottom: 1px solid #f0f0f0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .score-table th:nth-child(2), .score-table td:nth-child(2) { width: 45%; }
+  .score-row.me { background: #fff9e6; }
+  .small { opacity: .7; font-size: 12px; }
+  .hidden { display: none; }
+  .toast {
+    position: fixed; right: 12px; bottom: 12px; padding: 10px 12px; border-radius: 10px;
+    background: #111; color: #fff; font-size: 13px; box-shadow: 0 6px 22px rgba(0,0,0,.18);
+    pointer-events: none; opacity: 0; transform: translateY(8px); transition: .25s ease;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* ensure no blur anywhere */
+  .backdrop, .floating, .panel, .ui, .card {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <canvas id="game"></canvas>
+</div>
+<div class="hint">Tap / Click / Space to flap • P to pause • S to view Scores</div>
+
+<!-- UI overlays -->
+<div class="ui" id="ui">
+  <button id="btnScores" class="floating" title="Show scores">🏆 Scores</button>
+
+  <div id="overlayScores" class="panel hidden" aria-hidden="true">
+    <div class="backdrop" data-close="scores"></div>
+    <div class="card" role="dialog" aria-modal="true" aria-label="Scoreboard">
+      <h2>🏆 Scoreboard</h2>
+      <table class="score-table" id="scoreTable">
+        <thead><tr><th>#</th><th>Name</th><th>Score</th><th class="small">Date</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="row">
+        <button class="btn" data-close="scores">Close</button>
+        <button class="btn ghost" id="btnRefresh">Refresh</button>
+      </div>
+      <div class="small" style="margin-top:8px;">Stored</div>
+    </div>
+  </div>
+
+  <div id="overlayName" class="panel hidden" aria-hidden="true">
+    <div class="backdrop" data-close="name"></div>
+    <div class="card" role="dialog" aria-modal="true" aria-label="Save score">
+      <h2>New High Score! 🎉</h2>
+      <div>Enter a name to record your score.</div>
+      <div class="row">
+        <input id="nameInput" class="input" maxlength="16" placeholder="Your name" />
+        <button id="btnSaveName" class="btn">Save</button>
+        <button class="btn ghost" data-close="name">Skip</button>
+      </div>
+      <div class="small" style="margin-top:8px;">Saved.</div>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast">Saved</div>
+
+<script>
+(() => {
+  "use strict";
+
+  /* ===============================
+     CONFIG for Apps Script backend
+     =============================== */
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwvSB-KIZEke2hL8hpzxI8zvu9YnnlE239zHHdcsaEEdc0zoJlLoYemp3YLTwjIdaJ8mA/exec";
+  const APP_SECRET = "whatdoiknow";          // must match Code.gs
+  const BOARD_LIMIT = 10;
+
+  function toast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 1800);
+  }
+
+  /* ============================
+     Canvas & Game
+     ============================ */
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
+
+  let W = 360, H = 640;
+  function resize() {
+    const dpr = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+    canvas.width  = Math.floor(W * dpr);
+    canvas.height = Math.floor(H * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  resize(); addEventListener("resize", resize);
+
+  // Game constants
+  const GROUND_H = 96, BIRD_X = 0.28 * W, PIPE_W = 64;
+  const START_GAP = 150, MIN_GAP = 110, PIPE_SPEED = 120;
+  const GRAVITY = 900, JUMP_V = -280, MAX_FALL = 520, SPAWN_EVERY = 1.6;
+
+  // State
+  const State = { READY: 0, PLAY: 1, PAUSE: 2, OVER: 3 };
+  let state = State.READY;
+
+  const bird = { x: BIRD_X, y: H * 0.42, r: 14, vy: 0, angle: 0, flapBob: 0 };
+  let pipes = [], timeSinceSpawn = 0, score = 0, bestSession = 0;
+  let finalScore = 0;                         // <-- capture score at death
+
+  const clouds = [
+    { x: 40,  y: 90,  w: 90,  h: 36, v: 12 },
+    { x: 220, y: 140, w: 120, h: 44, v: 18 },
+    { x: 320, y: 60,  w: 70,  h: 28, v: 9  },
+  ];
+  let groundOffset = 0;
+
+  // Audio
+  let audioCtx = null;
+  function initAudio() { if (!audioCtx) try { audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } catch {} }
+  function beep(freq=700, dur=0.08, gain=0.03, type="square") {
+    if (!audioCtx) return;
+    const t0 = audioCtx.currentTime, osc = audioCtx.createOscillator(), g = audioCtx.createGain();
+    osc.type = type; osc.frequency.value = freq; g.gain.value = gain;
+    osc.connect(g).connect(audioCtx.destination); osc.start(t0); osc.stop(t0 + dur);
+  }
+
+  // Utils
+  const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+  const rand  = (a,b)=>Math.random()*(b-a)+a;
+
+  function circleRectCollision(cx, cy, r, rx, ry, rw, rh) {
+    const nx = clamp(cx, rx, rx + rw), ny = clamp(cy, ry, ry + rh);
+    const dx = cx - nx, dy = cy - ny;
+    return (dx*dx + dy*dy) <= r*r;
+  }
+
+  // Round control
+  function resetRound() {
+    pipes = []; timeSinceSpawn = 0; score = 0;
+    bird.y = H * 0.42; bird.vy = 0; bird.angle = 0; bird.flapBob = 0;
+    groundOffset = 0; state = State.READY;
+  }
+  function startPlay() { state = State.PLAY; initAudio(); }
+
+  // Delay prompting after death (never mid-run)
+  let promptTimer = null;
+
+  function gameOver() {
+    state = State.OVER;
+    finalScore = score;                       // <-- capture final score
+    bestSession = Math.max(bestSession, score);
+    if (promptTimer) clearTimeout(promptTimer);
+    promptTimer = setTimeout(() => {
+      if (state === State.OVER) maybePromptSaveScore();
+    }, 100);                                  // 100 ms
+  }
+
+  function flap() {
+    if (state === State.READY) startPlay();
+    else if (state === State.PLAY) { bird.vy = JUMP_V; beep(880, .07, .04, "square"); }
+    else if (state === State.OVER) resetRound();
+  }
+  function togglePause() { if (state === State.PLAY) state = State.PAUSE; else if (state === State.PAUSE) state = State.PLAY; }
+
+  /* ============================
+     Input (scoped to canvas)
+     ============================ */
+  const overlayScores = document.getElementById("overlayScores");
+  const overlayName   = document.getElementById("overlayName");
+  function uiOpen() {
+    return !overlayScores.classList.contains("hidden") ||
+           !overlayName.classList.contains("hidden");
+  }
+
+  // Keys: ignore gameplay keys while UI panels are open
+  addEventListener("keydown", (e) => {
+    if (uiOpen()) {
+      if (e.code === "KeyS") { toggleScores(); return; }
+      if (e.code === "Escape") { hideScores(); hideNamePanel(); return; }
+      if (e.code === "Space" || e.code === "ArrowUp") e.preventDefault();
+      return; // block gameplay input
+    }
+    if (e.code === "Space" || e.code === "ArrowUp") { e.preventDefault(); flap(); }
+    else if (e.code === "KeyP") togglePause();
+    else if (e.code === "KeyS") toggleScores(true);
+    else if (e.code === "Escape") { hideScores(); hideNamePanel(); }
+  }, { passive:false });
+
+  // Pointer/touch: ONLY on the canvas (fixes “clicking outside starts game”)
+  canvas.addEventListener("pointerdown", (e) => {
+    if (uiOpen()) return; // ignore clicks while a panel is open
+    e.preventDefault();
+    flap();
+  }, { passive:false });
+
+  // Loop
+  let last = performance.now();
+  requestAnimationFrame(function frame(now){
+    const dt = clamp((now - last)/1000, 0, 1/15); last = now;
+    update(dt); draw(); requestAnimationFrame(frame);
+  });
+
+  function update(dt) {
+    for (const c of clouds) { c.x -= c.v * dt; if (c.x + c.w < 0) { c.x = W + rand(20,80); c.y=rand(40,160); c.w=rand(70,130); c.h=c.w*0.4; } }
+
+    if (state === State.READY) { bird.flapBob += dt*2.2; bird.y = H*0.42 + Math.sin(bird.flapBob)*6; groundOffset = (groundOffset + 60*dt)%48; return; }
+    if (state === State.PAUSE) return;
+
+    if (state === State.OVER) {
+      bird.vy = clamp(bird.vy + GRAVITY*dt, -999, MAX_FALL);
+      bird.y += bird.vy * dt;
+      bird.angle = clamp(bird.vy / MAX_FALL * 1.0, -0.6, 1.2);
+      groundOffset = (groundOffset + PIPE_SPEED*dt)%48; return;
+    }
+
+    // PLAY
+    bird.vy = clamp(bird.vy + GRAVITY*dt, -999, MAX_FALL);
+    bird.y += bird.vy * dt;
+    bird.angle = clamp(bird.vy / MAX_FALL * 1.2, -0.6, 1.2);
+
+    timeSinceSpawn += dt;
+    const gap = clamp(START_GAP - Math.floor(score/5)*6, MIN_GAP, START_GAP);
+    if (timeSinceSpawn >= SPAWN_EVERY) {
+      timeSinceSpawn = 0;
+      const minTop = 40, maxTop = H - GROUND_H - gap - 40;
+      const topH = rand(minTop, maxTop);
+      pipes.push({ x: W + 10, topH, gap, scored: false });
+    }
+
+    const dx = PIPE_SPEED * dt;
+    for (const p of pipes) p.x -= dx;
+    while (pipes.length && pipes[0].x + PIPE_W < -10) pipes.shift();
+    groundOffset = (groundOffset + dx)%48;
+
+    for (const p of pipes) {
+      if (!p.scored && p.x + PIPE_W < bird.x) { p.scored = true; score++; beep(560, .06, .035, "triangle"); }
+    }
+
+    for (const p of pipes) {
+      if (circleRectCollision(bird.x, bird.y, bird.r, p.x, 0, PIPE_W, p.topH) ||
+          circleRectCollision(bird.x, bird.y, bird.r, p.x, p.topH + p.gap, PIPE_W, H - GROUND_H - (p.topH + p.gap))) {
+        beep(240, 0.12, 0.06, "sawtooth"); gameOver();
+      }
+    }
+
+    if (bird.y - bird.r < 0) { bird.y = bird.r; bird.vy = 0; }
+    if (bird.y + bird.r > H - GROUND_H) { bird.y = H - GROUND_H - bird.r; beep(200, .14, .07, "sawtooth"); gameOver(); }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, W, H);
+    drawSun(); for (const c of clouds) drawCloud(c.x,c.y,c.w,c.h);
+    for (const p of pipes) drawPipePair(p);
+    drawGround(); drawBird(); drawHUD();
+  }
+
+  // Drawing helpers
+  function drawSun() {
+    const cx = W - 60, cy = 70, r = 36;
+    const g = ctx.createRadialGradient(cx,cy,0,cx,cy,r*2.4);
+    g.addColorStop(0,"rgba(255,255,255,.95)"); g.addColorStop(1,"rgba(255,255,0,0)");
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(cx,cy,r*2.4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#fff59d"; ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fill();
+  }
+  function drawCloud(x,y,w,h) {
+    ctx.fillStyle="rgba(255,255,255,0.9)"; roundedRect(x,y,w,h,h/2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+w*0.25,y,h*0.55,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+w*0.55,y+h*0.1,h*0.7,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(x+w*0.8,y+h*0.05,h*0.5,0,Math.PI*2); ctx.fill();
+  }
+  function drawPipePair(p) {
+    const shade = ctx.createLinearGradient(0,0,PIPE_W,0);
+    shade.addColorStop(0,"#2ecc71"); shade.addColorStop(1,"#27ae60"); ctx.fillStyle=shade;
+    ctx.fillRect(p.x,0,PIPE_W,p.topH); drawPipeLip(p.x,p.topH-14);
+    const by = p.topH + p.gap, bh = H - GROUND_H - by;
+    ctx.fillRect(p.x,by,PIPE_W,bh); drawPipeLip(p.x,by);
+    ctx.fillStyle="rgba(255,255,255,.15)"; ctx.fillRect(p.x+4,0,6,p.topH); ctx.fillRect(p.x+4,by,6,bh);
+  }
+  function drawPipeLip(x,y){ ctx.fillStyle="#1e8449"; ctx.fillRect(x-4,y,PIPE_W+8,14); ctx.fillStyle="rgba(255,255,255,.18)"; ctx.fillRect(x-2,y+2,PIPE_W+4,4); }
+  function drawGround() {
+    const y = H - GROUND_H; ctx.fillStyle="#dfc27d"; ctx.fillRect(0,y,W,GROUND_H);
+    ctx.fillStyle="#6ab04c"; ctx.fillRect(0,y,W,10);
+    ctx.save(); ctx.beginPath(); ctx.rect(0,y+10,W,GROUND_H-10); ctx.clip(); ctx.fillStyle="#cfae6b";
+    for (let x=-48 + -groundOffset; x < W + 48; x+=48) {
+      ctx.fillRect(x,y+16,32,12); ctx.fillRect(x+12,y+36,28,12); ctx.fillRect(x-6,y+56,26,12);
+    }
+    ctx.restore();
+  }
+  function drawBird() {
+    ctx.save(); ctx.translate(bird.x,bird.y); ctx.rotate(bird.angle);
+    const r = bird.r; const bodyGrad = ctx.createRadialGradient(-2,-2,r*.2,0,0,r*1.2);
+    bodyGrad.addColorStop(0,"#ffec80"); bodyGrad.addColorStop(1,"#f4c542");
+    ctx.fillStyle=bodyGrad; ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#ffd36b"; const flap = clamp(-bird.vy/400,-0.8,1.2);
+    roundedRect(-r*.6,-r*.3 - flap*3, r*1.0, r*.6, r*.3); ctx.fill();
+    ctx.fillStyle="#fff"; ctx.beginPath(); ctx.arc(r*.25,-r*.2,r*.34,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#000"; ctx.beginPath(); ctx.arc(r*.35,-r*.2,r*.16,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle="#ff9f43"; ctx.beginPath(); ctx.moveTo(r*.8,0); ctx.lineTo(r*1.28,-r*.18); ctx.lineTo(r*1.28,r*.18); ctx.closePath(); ctx.fill();
+    ctx.restore();
+  }
+  function drawHUD() {
+    if (state === State.PLAY || state === State.PAUSE) drawShadowText(String(score), W/2, 80, 48, "center");
+    if (state === State.READY) {
+      drawShadowText("FLAPPY", W/2, 160, 40, "center");
+      drawShadowText("Tap to Start", W/2, 220, 20, "center");
+      drawShadowText("Space / Click / Tap", W/2, 250, 16, "center");
+      drawShadowText("P to Pause • S to Scores", W/2, 276, 14, "center");
+      drawCardStats();
+    } else if (state === State.PAUSE) {
+      overlay(); drawShadowText("Paused", W/2, H/2 - 8, 28, "center");
+      drawShadowText("Press P to resume", W/2, H/2 + 22, 16, "center");
+    } else if (state === State.OVER) {
+      overlay(); drawShadowText("GAME OVER", W/2, H/2 - 40, 28, "center");
+      drawShadowText(`Score: ${score}`, W/2, H/2, 20, "center");
+      drawShadowText(`PB (session): ${bestSession}`, W/2, H/2 + 28, 18, "center");
+      drawShadowText("Tap / Space to restart • S to Scores", W/2, H/2 + 60, 14, "center");
+    }
+  }
+  function drawCardStats() {
+    const pad=10, w=170, h=52; const x=W-w-pad, y=H-h-pad-8;
+    ctx.save(); ctx.globalAlpha=.85; roundedRect(x,y,w,h,12); ctx.fillStyle="#ffffff"; ctx.fill(); ctx.restore();
+    ctx.fillStyle="#333"; ctx.font="14px system-ui, Arial"; ctx.textAlign="left"; ctx.textBaseline="middle";
+    ctx.fillText(`PB (session): ${bestSession}`, x+14, y+h/2);
+    ctx.textAlign="right"; ctx.fillText("P = Pause", x+w-12, y+h/2);
+  }
+  function overlay(){ ctx.fillStyle="rgba(0,0,0,0.45)"; ctx.fillRect(0,0,W,H); }
+  function drawShadowText(txt,x,y,size,align="left"){
+    ctx.font=`bold ${size}px system-ui, Arial`; ctx.textAlign=align; ctx.textBaseline="alphabetic";
+    ctx.fillStyle="rgba(0,0,0,.35)"; ctx.fillText(txt,x+2.5,y+2.5); ctx.fillStyle="#fff"; ctx.fillText(txt,x,y);
+  }
+  function roundedRect(x,y,w,h,r){ const rr=Math.min(r, Math.min(w,h)/2);
+    ctx.beginPath(); ctx.moveTo(x+rr,y); ctx.arcTo(x+w,y,x+w,y+h,rr); ctx.arcTo(x+w,y+h,x,y+h,rr);
+    ctx.arcTo(x,y+h,x,y,rr); ctx.arcTo(x,y,x+w,y,rr); ctx.closePath();
+  }
+
+  resetRound();
+
+  /* ===========================
+     Scoreboard via Apps Script
+     =========================== */
+  let boardCache = [];
+
+  async function fetchBoard(limit = BOARD_LIMIT) {
+    const url = `${APPS_SCRIPT_URL}?limit=${encodeURIComponent(limit)}`;
+    const res = await fetch(url, { method: "GET", cache: "no-store" });
+    if (!res.ok) throw new Error("Fetch board failed");
+    const data = await res.json();
+    boardCache = Array.isArray(data.top) ? data.top : (Array.isArray(data) ? data : []);
+    return boardCache;
+  }
+
+  // POST first; fallback to GET save if needed; keep boardCache in sync
+  async function postScore(name, s) {
+    const payload = { name, score: s, token: APP_SECRET || "" };
+
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain" }, // simple request, no preflight
+        body: JSON.stringify(payload)
+      });
+      let data = {}; try { data = await res.json(); } catch {}
+      if (res.ok && (data.ok || Array.isArray(data.top))) {
+        if (Array.isArray(data.top)) boardCache = data.top;
+        return data;
+      }
+      throw new Error("POST not OK");
+    } catch {
+      const qs = new URLSearchParams({ save:"1", name, score:String(s), token: APP_SECRET || "" }).toString();
+      const res2 = await fetch(`${APPS_SCRIPT_URL}?${qs}`, { method: "GET", cache: "no-store" });
+      let data2 = {}; try { data2 = await res2.json(); } catch {}
+      if (Array.isArray(data2.top)) boardCache = data2.top;
+      return data2; // {ok:true,saved:true, top:[...]} if server implemented return
+    }
+  }
+
+  function qualifiesForBoard(s) {
+    if (s <= 0) return false;
+    if (!boardCache || boardCache.length < BOARD_LIMIT) return true;
+    const min = Math.min(...boardCache.map(x => x.score));
+    return s > min;
+  }
+
+  // Prompt name entry only if qualifies (called AFTER death via timer)
+  async function maybePromptSaveScore() {
+    try {
+      if (!boardCache.length) await fetchBoard(BOARD_LIMIT);
+      if (qualifiesForBoard(finalScore)) showNamePanel();
+    } catch {
+      // even if fetch fails, allow manual submit
+      showNamePanel();
+    }
+  }
+
+  // ===== UI elements =====
+  const btnScores = document.getElementById("btnScores");
+  const scoreTable = document.getElementById("scoreTable").querySelector("tbody");
+  const btnRefresh = document.getElementById("btnRefresh");
+  const nameInput = document.getElementById("nameInput");
+  const btnSaveName = document.getElementById("btnSaveName");
+
+  btnScores.addEventListener("click", (e) => { e.stopPropagation(); toggleScores(true); });
+  btnRefresh.addEventListener("click", async (e) => { e.stopPropagation(); await refreshScores(); });
+
+  document.querySelectorAll("[data-close='scores']").forEach(el => el.addEventListener("click", (e)=>{ e.stopPropagation(); hideScores(); }));
+  document.querySelectorAll("[data-close='name']").forEach(el => el.addEventListener("click", (e)=>{ e.stopPropagation(); hideNamePanel(); }));
+
+  btnSaveName.addEventListener("click", saveNameAndScore);
+  nameInput.addEventListener("keydown", (e) => { if (e.key === "Enter") saveNameAndScore(); });
+
+  async function refreshScores() {
+    try { await fetchBoard(BOARD_LIMIT); renderTable(); toast("Refreshed"); }
+    catch (e) { console.warn(e); toast("Refresh failed"); }
+  }
+
+  async function saveNameAndScore() {
+    const nm = (nameInput.value || "").trim().slice(0,16) || "Player";
+    try {
+      const resp = await postScore(nm, finalScore);     // use finalScore captured at death
+      toast(resp && (resp.ok || resp.saved) ? "Saved" : "Save error");
+      await refreshScores();                             // force fresh board
+      hideNamePanel(); toggleScores(true);
+    } catch (e) {
+      console.warn(e); toast("Save failed"); hideNamePanel();
+    }
+  }
+
+  function renderTable() {
+    const board = boardCache || [];
+    scoreTable.innerHTML = "";
+    if (!board.length) {
+      scoreTable.innerHTML = `<tr><td colspan="4" class="small" style="padding:18px;">No scores yet — get flapping! 🐥</td></tr>`;
+      return;
+    }
+    board.forEach((row, i) => {
+      const tr = document.createElement("tr");
+      const date = new Date(row.date);
+      const dateStr = isNaN(+date) ? "" : date.toLocaleDateString([], { year:'2-digit', month:'2-digit', day:'2-digit' });
+      tr.className = "score-row";
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td title="${escapeHtml(row.name)}">${escapeHtml(row.name)}</td>
+        <td>${row.score}</td>
+        <td class="small">${dateStr}</td>`;
+      scoreTable.appendChild(tr);
+    });
+  }
+  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  function showScores() {
+    renderTable(); overlayScores.classList.remove("hidden");
+    overlayScores.setAttribute("aria-hidden","false");
+    refreshScores().catch(()=>{});
+  }
+  function hideScores() {
+    overlayScores.classList.add("hidden");
+    overlayScores.setAttribute("aria-hidden","true");
+  }
+  function toggleScores(forceOpen=false) {
+    const open = !overlayScores.classList.contains("hidden");
+    if (forceOpen || !open) showScores(); else hideScores();
+  }
+  function showNamePanel() {
+    overlayName.classList.remove("hidden");
+    overlayName.setAttribute("aria-hidden","false");
+    setTimeout(()=>nameInput.focus(), 0);
+  }
+  function hideNamePanel() {
+    overlayName.classList.add("hidden");
+    overlayName.setAttribute("aria-hidden","true");
+  }
+})();
+</script>
+</body>
+</html>

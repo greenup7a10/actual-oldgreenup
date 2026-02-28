@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="vi">
 <head>
-    <!-- Google tag -->
+    <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-HVVBRLHDV3"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -14,7 +14,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Green Up — Huy Hiệu</title>
 
-  <!-- Auth guard -->
+  <!-- Auth guard (session OR local, works across refreshes) -->
   <script>
     (function () {
       try {
@@ -29,7 +29,7 @@
   <link rel="stylesheet" href="css/style.css?v=ach13" />
 
   <style>
-    /* Page scoped styles */
+    /* Page-scoped styles (safe to keep tiny) */
     .ach-wrap{width:min(1100px,95vw);margin:22px auto;}
     .ach-card{background:rgba(255,255,255,.86);border:1px solid rgba(0,0,0,.08);border-radius:18px;padding:18px 18px 8px;backdrop-filter:blur(6px)}
     .ach-top{display:grid;grid-template-columns:1fr;gap:10px}
@@ -125,7 +125,7 @@
     </section>
   </main>
 
-  <!-- Footer -->
+  <!-- Footer (same layout) -->
   <footer class="island-footer">
     <div class="footer-left">
       <nav class="footer-nav" aria-label="Footer">
@@ -145,7 +145,7 @@
     </div>
   </footer>
 
-  <!-- JS -->
+  <!-- Shared site script + page logic -->
   <script defer src="js/script.js?v=ach13"></script>
   <script>
   (function(){
@@ -203,7 +203,7 @@
       });
     }
 
-    // ---------- UTIL ----------
+    // ---------- UTIL: entries + counters ----------
     function loadEntries(){
       try { return JSON.parse(localStorage.getItem('greenup_entries')||'[]'); }
       catch (_){ return []; }

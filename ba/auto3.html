@@ -1,0 +1,712 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Compass Chord Accompaniment (SoundFont Band)</title>
+  <style>
+    :root{
+      --bg:#0b0f14; --text:#e8eef7; --muted:#9fb0c6; --accent:#5ee1ff;
+      --danger:#ff5e7a; --ok:#5effa1;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; color:var(--text);
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:radial-gradient(1200px 900px at 50% -10%, #172338 0%, var(--bg) 50%);
+      display:flex; flex-direction:column;
+    }
+    header{padding:16px 16px 8px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px;}
+    header h1{margin:0; font-size:16px;}
+    header .sub{font-size:12px; color:var(--muted)}
+    .wrap{padding:12px 16px 18px; display:grid; gap:12px; max-width:980px; width:100%; margin:0 auto;}
+    .row{display:grid; gap:12px; grid-template-columns: 1fr;}
+    @media (min-width:860px){ .row{grid-template-columns: 1.2fr .8fr;} }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:16px; padding:14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .meta{display:flex; flex-wrap:wrap; gap:8px}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px; padding:8px 10px;
+      border-radius:999px; background:rgba(255,255,255,.04);
+      border:1px solid rgba(255,255,255,.08); font-size:12px; color:var(--muted);
+    }
+    .pill strong{color:var(--text)}
+    .statusLine{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 12px; border-radius:14px; background:rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.07);
+    }
+    .statusLine .left{display:flex; flex-direction:column; gap:4px}
+    .statusLine .title{font-size:14px; font-weight:700}
+    .statusLine .small{font-size:12px; color:var(--muted)}
+    .badge{
+      font-size:12px; padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.04);
+      color:var(--muted); white-space:nowrap;
+    }
+    .badge.on{border-color: rgba(94,255,161,.35); background: rgba(94,255,161,.10); color: var(--ok)}
+    .badge.off{border-color: rgba(255,94,122,.35); background: rgba(255,94,122,.10); color: var(--danger)}
+    .btn{
+      border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.04);
+      color:var(--text); padding:12px 12px; border-radius:14px; font-size:14px;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      user-select:none; touch-action: manipulation;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{border-color: rgba(94,225,255,.35); background: rgba(94,225,255,.10);}
+    .btn.danger{border-color: rgba(255,94,122,.35); background: rgba(255,94,122,.10);}
+    select{
+      width:100%; padding:12px 12px; border-radius:14px;
+      border:1px solid rgba(255,255,255,.10); background: rgba(255,255,255,.03);
+      color:var(--text); font-size:14px; outline:none;
+    }
+    .controls{display:grid; gap:10px}
+    .grid{display:grid; gap:10px; grid-template-columns: 1fr 1fr;}
+    .grid3{display:grid; gap:10px; grid-template-columns: 1fr 1fr 1fr;}
+    .hint{font-size:12px; color:var(--muted); line-height:1.4}
+    code.inline{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); padding:2px 6px; border-radius:8px}
+
+    .clock{
+      position:relative; width:min(82vw, 420px); aspect-ratio:1/1; margin:0 auto;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), rgba(255,255,255,.02) 55%, rgba(0,0,0,0) 56%),
+        radial-gradient(circle at 50% 50%, rgba(94,225,255,.10) 0%, rgba(0,0,0,0) 55%);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: inset 0 0 0 10px rgba(0,0,0,.12), 0 20px 70px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .ring{position:absolute; inset:14px; border-radius:999px; border:1px dashed rgba(255,255,255,.10);}
+    .center{
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:12px; height:12px; border-radius:999px; background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(94,225,255,.15), 0 0 30px rgba(94,225,255,.25);
+    }
+    .hand{
+      position:absolute; left:50%; top:50%;
+      width:2px; height:42%;
+      transform-origin: bottom center;
+      background: linear-gradient(180deg, rgba(94,225,255,.0), rgba(94,225,255,.95));
+      transform: translateX(-50%) translateY(-100%) rotate(0deg);
+      border-radius:999px;
+      filter: drop-shadow(0 0 12px rgba(94,225,255,.3));
+    }
+    .slot{
+      position:absolute; left:50%; top:50%;
+      width:96px; max-width:28%;
+      transform: translate(-50%,-50%);
+      text-align:center; padding:8px 10px; border-radius:999px;
+      background: rgba(18,26,36,.75);
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--muted); font-size:13px;
+      user-select:none; cursor:pointer; touch-action: manipulation;
+      backdrop-filter: blur(8px);
+    }
+    .slot strong{display:block; color:var(--text); font-weight:700; font-size:14px}
+    .slot.empty{opacity:.35}
+    .slot.active{
+      border-color: rgba(94,225,255,.45);
+      box-shadow: 0 0 0 4px rgba(94,225,255,.12), 0 18px 40px rgba(0,0,0,.35);
+      color: var(--text);
+    }
+    .slot.active strong{color:var(--accent)}
+    .slot .mini{font-size:11px; color:var(--muted)}
+  </style>
+</head>
+
+<body>
+  <header>
+    <div>
+      <h1>Compass Chord Auto Accompaniment (SoundFont Band)</h1>
+      <div class="sub">Drums GM + Bass + Nylon Guitar (rải) + Strings Pad</div>
+    </div>
+    <div class="meta">
+      <span class="pill">Hướng: <strong id="headingTxt">--°</strong></span>
+      <span class="pill">Chế độ: <strong id="modeTxt">Tap/Compass</strong></span>
+      <span class="pill">Tải âm: <strong id="loadTxt">Chưa</strong></span>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="row">
+      <div class="card">
+        <div class="statusLine">
+          <div class="left">
+            <div class="title">Hợp âm hiện tại: <span id="currentChord" style="color:var(--accent)">Am</span></div>
+            <div class="small">Style: <span id="currentStyle">Ballad</span> • Tempo: <span id="tempoTxt">92</span> BPM • Transpose: <span id="transposeTxt">0</span></div>
+          </div>
+          <div id="playBadge" class="badge off">STOPPED</div>
+        </div>
+
+        <div class="clock" id="clock" style="margin-top:12px;">
+          <div class="ring"></div>
+          <div class="hand" id="hand"></div>
+          <div class="center"></div>
+        </div>
+
+        <div class="hint" style="margin-top:12px">
+          iPhone/iPad: bấm <code class="inline">Load Sounds</code> rồi mới Start. Nếu chưa load mà Start thì bạn đang tự bắn vào chân mình.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="controls">
+          <div style="display:flex; gap:10px; align-items:center;">
+            <button class="btn" id="btnCompass" style="flex:1;">Enable Compass</button>
+            <button class="btn primary" id="btnLoad" style="flex:1;">Load Sounds</button>
+          </div>
+
+          <div>
+            <div style="font-weight:700; margin-bottom:8px;">Chọn điệu (Style)</div>
+            <select id="styleSelect"></select>
+            <div class="hint" style="margin-top:8px">
+              “Guitar rải” sẽ đánh theo nhịp comp của style (đỡ chán hơn piano chặt).
+            </div>
+          </div>
+
+          <div class="grid">
+            <button class="btn primary" id="btnStartStop">Start</button>
+            <button class="btn danger" id="btnStop">Stop</button>
+          </div>
+
+          <div class="grid3">
+            <button class="btn" id="tpDown">Transpose -</button>
+            <button class="btn" id="tpReset">Transpose 0</button>
+            <button class="btn" id="tpUp">Transpose +</button>
+          </div>
+
+          <div class="grid3">
+            <button class="btn" id="tempoDown">Tempo -</button>
+            <button class="btn" id="tempoReset">Tempo 92</button>
+            <button class="btn" id="tempoUp">Tempo +</button>
+          </div>
+
+          <div class="hint">
+            Nếu muốn “điệu Bolero / Rumba / Cha-cha” đúng kiểu keyboard arranger (fill-in, intro/ending), cần thêm engine Variation A/B + Fill. Bản này là nền móng đã “ra band” trước.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SoundFont Player -->
+  <script src="https://unpkg.com/soundfont-player@0.15.7/dist/soundfont-player.js"></script>
+
+<script>
+(() => {
+  // =========================
+  // 1) Chords on clock hours
+  // =========================
+  // Bạn gõ “xin lỗi ở vị trí 2 giờ” => coi như Bm mặc định. Sửa ở đây nếu muốn.
+  const CHORDS_BY_HOUR = {
+    12: { name: "Am"  },
+    1:  { name: "Bdim"},
+    2:  { name: "Bm"  },   // <-- sửa ở đây nếu muốn
+    3:  { name: "C"   },
+    5:  { name: "Dm"  },
+    7:  { name: "E7"  },
+    8:  { name: "F"   },
+    10: { name: "G"   }
+  };
+
+  // =========================
+  // 2) Styles (16 steps/bar)
+  // =========================
+  const STYLES = [
+    "Ballad","Disco","Valse","Slow Sup","Blues","Slow Rock","Habanera","Bolero","Rumba","Cha-cha-cha","Boston","Fox","Paso Doble","Reggae"
+  ];
+
+  const P = {
+    ballad:   {kick:[1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0], comp:[0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0], swing:0.00},
+    disco:    {kick:[1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1], bass:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], comp:[0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1], swing:0.00},
+    blues:    {kick:[1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1], comp:[0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0], swing:0.14},
+    slowRock: {kick:[1,0,0,0, 0,0,1,0, 1,0,0,0, 0,1,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0], comp:[0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0], swing:0.05},
+    habanera: {kick:[1,0,0,0, 0,0,0,1, 0,0,1,0, 0,1,0,0], snare:[0,0,1,0, 0,1,0,0, 1,0,0,0, 0,0,1,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,0,1, 0,0,0,1, 1,0,0,1, 0,0,0,1], comp:[0,0,1,0, 0,1,0,0, 0,0,1,0, 0,1,0,0], swing:0.08},
+    bolero:   {kick:[1,0,0,0, 0,1,0,0, 1,0,0,0, 0,1,0,0], snare:[0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0], hat:[1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1], bass:[1,0,0,0, 0,1,0,0, 1,0,0,0, 0,1,0,0], comp:[0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0], swing:0.07},
+    rumba:    {kick:[1,0,0,0, 0,0,1,0, 0,1,0,0, 1,0,0,0], snare:[0,0,1,0, 0,1,0,0, 1,0,0,1, 0,0,1,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,0,1, 0,1,0,0, 1,0,0,1, 0,1,0,0], comp:[0,0,1,0, 0,1,0,0, 0,0,1,0, 0,1,0,0], swing:0.09},
+    chacha:   {kick:[1,0,0,0, 0,0,1,0, 1,0,1,0, 0,0,1,0], snare:[0,0,1,0, 0,1,0,0, 1,0,0,1, 0,0,1,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,0,1, 0,1,0,0, 1,0,0,1, 0,1,0,0], comp:[0,0,1,0, 0,1,0,0, 0,0,1,0, 0,1,0,0], swing:0.02},
+    passo:    {kick:[1,0,0,0, 1,0,1,0, 1,0,0,0, 1,0,1,0], snare:[0,0,1,0, 0,1,0,0, 1,0,0,1, 0,0,1,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], comp:[0,1,0,0, 0,1,0,0, 0,1,0,0, 0,1,0,0], swing:0.00},
+    reggae:   {kick:[1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0], bass:[1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0], comp:[0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1], swing:0.00},
+    waltz:    {kick:[1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0], snare:[0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0], hat:[1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0], bass:[1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0], comp:[0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0], swing:0.00}
+  };
+
+  function styleToPattern(name){
+    const n = name.toLowerCase();
+    if(n.includes("disco")) return P.disco;
+    if(n.includes("valse") || n.includes("boston") || n.includes("fox")) return P.waltz;
+    if(n.includes("slow rock")) return P.slowRock;
+    if(n.includes("blue")) return P.blues;
+    if(n.includes("habanera")) return P.habanera;
+    if(n.includes("bolero") || n.includes("slow sup")) return P.bolero;
+    if(n.includes("rumba")) return P.rumba;
+    if(n.includes("cha")) return P.chacha;
+    if(n.includes("paso")) return P.passo;
+    if(n.includes("rigg") || n.includes("regga")) return P.reggae;
+    return P.ballad;
+  }
+
+  // =========================
+  // 3) UI refs + clock slots
+  // =========================
+  const clockEl = document.getElementById("clock");
+  const handEl  = document.getElementById("hand");
+  const headingTxt = document.getElementById("headingTxt");
+  const modeTxt = document.getElementById("modeTxt");
+  const loadTxt = document.getElementById("loadTxt");
+  const currentChordEl = document.getElementById("currentChord");
+  const currentStyleEl = document.getElementById("currentStyle");
+  const tempoTxt = document.getElementById("tempoTxt");
+  const transposeTxt = document.getElementById("transposeTxt");
+  const playBadge = document.getElementById("playBadge");
+
+  const styleSelect = document.getElementById("styleSelect");
+  const btnCompass = document.getElementById("btnCompass");
+  const btnLoad = document.getElementById("btnLoad");
+
+  const btnStartStop = document.getElementById("btnStartStop");
+  const btnStop = document.getElementById("btnStop");
+  const tpDown = document.getElementById("tpDown");
+  const tpUp = document.getElementById("tpUp");
+  const tpReset = document.getElementById("tpReset");
+  const tempoDown = document.getElementById("tempoDown");
+  const tempoUp = document.getElementById("tempoUp");
+  const tempoReset = document.getElementById("tempoReset");
+
+  const slotEls = {};
+  for(let h=1; h<=12; h++){
+    const slot = document.createElement("div");
+    slot.className = "slot";
+    slot.dataset.hour = String(h);
+
+    const chord = CHORDS_BY_HOUR[h];
+    if(!chord){
+      slot.classList.add("empty");
+      slot.innerHTML = `<strong>—</strong><div class="mini">${h} giờ</div>`;
+    } else {
+      slot.innerHTML = `<strong>${chord.name}</strong><div class="mini">${h} giờ</div>`;
+    }
+
+    const angleDeg = ((h % 12) * 30) - 90;
+    const radius = 44;
+    const x = 50 + radius * Math.cos(angleDeg * Math.PI/180);
+    const y = 50 + radius * Math.sin(angleDeg * Math.PI/180);
+    slot.style.left = x + "%";
+    slot.style.top  = y + "%";
+
+    slot.addEventListener("click", () => {
+      if(!CHORDS_BY_HOUR[h]) return;
+      selectHour(h, "tap");
+    });
+
+    clockEl.appendChild(slot);
+    slotEls[h] = slot;
+  }
+
+  function setActiveSlot(hour){
+    Object.keys(slotEls).forEach(h => slotEls[h].classList.remove("active"));
+    slotEls[hour]?.classList.add("active");
+  }
+
+  // =========================
+  // 4) Audio (SoundFont band)
+  // =========================
+  let audioCtx = null;
+  let master = null;
+  let isPlaying = false;
+
+  let tempo = 92;
+  let transpose = 0;
+  let currentHour = 12;
+  let currentStyle = "Ballad";
+  let currentPattern = styleToPattern(currentStyle);
+
+  // Instruments
+  let drumKit = null;  // GM kit
+  let bassIns = null;  // acoustic bass
+  let guitar  = null;  // nylon guitar (arpeggio comp)
+  let strings = null;  // pad
+  let soundsReady = false;
+
+  // Scheduler
+  let currentStep = 0;
+  let nextNoteTime = 0;
+  let timerID = null;
+  const lookahead = 25;
+  const scheduleAheadTime = 0.12;
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function ensureAudio(){
+    if(audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    master = audioCtx.createGain();
+    master.gain.value = 0.90;
+
+    const comp = audioCtx.createDynamicsCompressor();
+    comp.threshold.value = -18;
+    comp.knee.value = 12;
+    comp.ratio.value = 4;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.18;
+
+    master.connect(comp);
+    comp.connect(audioCtx.destination);
+  }
+
+  // MIDI helpers
+  const NOTE_TO_SEMI = {C:0, "C#":1, Db:1, D:2, "D#":3, Eb:3, E:4, F:5, "F#":6, Gb:6, G:7, "G#":8, Ab:8, A:9, "A#":10, Bb:10, B:11};
+  function midiFromNoteName(name, octave){
+    const semi = NOTE_TO_SEMI[name];
+    return 12*(octave+1) + semi;
+  }
+
+  function chordToMidi(chordName){
+    let root = chordName[0].toUpperCase();
+    let rest = chordName.slice(1);
+    if(rest.startsWith("#") || rest.startsWith("b")){
+      root += rest[0];
+      rest = rest.slice(1);
+    }
+    let quality = "maj";
+    if(rest.toLowerCase().includes("dim")) quality = "dim";
+    else if(rest.startsWith("m")) quality = "min";
+    else if(rest.includes("7")) quality = "7";
+
+    const rootComp = midiFromNoteName(root, 4) + transpose;
+    const rootBass = midiFromNoteName(root, 2) + transpose;
+
+    let intervals = [0,4,7];
+    if(quality==="min") intervals = [0,3,7];
+    if(quality==="dim") intervals = [0,3,6];
+    if(quality==="7") intervals = [0,4,7,10];
+
+    const comp = intervals.map(i => rootComp + i);
+    return { comp, rootBass };
+  }
+
+  function secondsPerStep(){
+    return (60 / tempo) / 4; // 16 steps/bar
+  }
+
+  function applySwing(stepTime, stepIndex){
+    const sw = currentPattern.swing || 0;
+    if(sw <= 0) return stepTime;
+    if(stepIndex % 2 === 1) return stepTime + secondsPerStep() * sw;
+    return stepTime;
+  }
+
+  // GM Drum notes
+  const DR = {
+    KICK: 36,
+    SNARE: 38,
+    CL_HAT: 42,
+    OP_HAT: 46,
+    CLAP: 39,
+    RIDE: 51,
+    CRASH: 49
+  };
+
+  function playDrum(midi, time, gain, dur){
+    if(!drumKit) return;
+    drumKit.play(midi, time, {gain, duration: dur});
+  }
+
+  // Guitar arpeggio voicing: make it feel like strum/arpeggio, not block chord
+  function scheduleGuitarArp(notes, time, stepIndex){
+    if(!guitar) return;
+    // order: low-mid-high-mid
+    const ordered = notes.slice(0,3);
+    const spread = [ordered[0]-12, ordered[1], ordered[2]+12, ordered[1]];
+
+    const baseGain = 0.16;
+    const d = Math.min(0.45, secondsPerStep()*3.2);
+
+    // micro-stagger for “strum”
+    const stagger = 0.012;
+    spread.forEach((m, i) => {
+      guitar.play(m, time + i*stagger, {gain: baseGain*(i===0?1.0:0.85), duration: d});
+    });
+
+    // occasional extra “upstroke” sparkle
+    if(stepIndex % 8 === 6){
+      guitar.play(ordered[2]+12, time + 0.06, {gain: 0.10, duration: 0.18});
+    }
+  }
+
+  function scheduleStringsPad(notes, time){
+    if(!strings) return;
+    // hold softly on bar start (step 0)
+    const d = 1.8; // seconds-ish (will overlap a bit)
+    const g = 0.10;
+    notes.slice(0,3).forEach((m, i) => strings.play(m + 12, time, {gain: g*(i===0?1.05:1.0), duration: d}));
+  }
+
+  function scheduleStep(stepIndex, time){
+    const chordObj = CHORDS_BY_HOUR[currentHour];
+    if(!chordObj) return;
+    const chord = chordToMidi(chordObj.name);
+
+    // DRUMS
+    if(currentPattern.kick[stepIndex])  playDrum(DR.KICK,  time, 0.90, 0.14);
+    if(currentPattern.snare[stepIndex]) playDrum(DR.SNARE, time, 0.75, 0.12);
+    if(currentPattern.hat[stepIndex]) {
+      // vary hats: open hat sometimes
+      const open = (stepIndex % 8 === 7);
+      playDrum(open ? DR.OP_HAT : DR.CL_HAT, time, open ? 0.28 : 0.22, open ? 0.30 : 0.10);
+    }
+    // little spice: crash at bar start for disco/rock-ish styles
+    if(stepIndex === 0 && (currentStyle.toLowerCase().includes("disco") || currentStyle.toLowerCase().includes("rock"))){
+      playDrum(DR.CRASH, time, 0.25, 0.9);
+    }
+
+    // BASS
+    if(currentPattern.bass[stepIndex] && bassIns){
+      const useFifth = (stepIndex % 8 === 6);
+      const midi = useFifth ? chord.rootBass + 7 : chord.rootBass;
+      bassIns.play(midi, time, {gain: 0.70, duration: Math.min(0.22, secondsPerStep()*1.6)});
+    }
+
+    // GUITAR COMP (arpeggio)
+    if(currentPattern.comp[stepIndex]){
+      scheduleGuitarArp(chord.comp, time, stepIndex);
+    }
+
+    // STRINGS PAD at bar start (and maybe mid-bar for ballad)
+    if(stepIndex === 0){
+      scheduleStringsPad(chord.comp, time);
+    } else if(stepIndex === 8 && currentStyle.toLowerCase().includes("ballad")){
+      scheduleStringsPad(chord.comp, time);
+    }
+  }
+
+  function scheduler(){
+    while(audioCtx && nextNoteTime < audioCtx.currentTime + scheduleAheadTime){
+      const t = applySwing(nextNoteTime, currentStep);
+      scheduleStep(currentStep, t);
+      nextNoteTime += secondsPerStep();
+      currentStep = (currentStep + 1) % 16;
+    }
+    timerID = window.setTimeout(scheduler, lookahead);
+  }
+
+  function updatePlayUI(){
+    playBadge.classList.toggle("on", isPlaying);
+    playBadge.classList.toggle("off", !isPlaying);
+    playBadge.textContent = isPlaying ? "PLAYING" : "STOPPED";
+    btnStartStop.textContent = isPlaying ? "Pause" : "Start";
+  }
+
+  async function start(){
+    ensureAudio();
+    await audioCtx.resume?.();
+
+    if(!soundsReady){
+      alert("Chưa Load Sounds. Bấm 'Load Sounds' trước.");
+      return;
+    }
+    if(isPlaying) return;
+    isPlaying = true;
+    currentStep = 0;
+    nextNoteTime = audioCtx.currentTime + 0.06;
+    scheduler();
+    updatePlayUI();
+  }
+
+  function stop(){
+    isPlaying = false;
+    if(timerID) { clearTimeout(timerID); timerID = null; }
+    updatePlayUI();
+  }
+
+  // Load SoundFonts (FluidR3_GM)
+  async function loadSounds(){
+    ensureAudio();
+    await audioCtx.resume?.();
+
+    loadTxt.textContent = "Đang tải...";
+    btnLoad.textContent = "Loading...";
+    btnLoad.classList.add("primary");
+
+    try{
+      const soundfontBase = "https://cdn.jsdelivr.net/gh/gleitz/midi-js-soundfonts@master/FluidR3_GM/";
+      const nameToUrl = (name, sf, format) => `${soundfontBase}${name}-${format}.js`;
+
+      // IMPORTANT: Drum kit name in this soundfont set is usually "standard_kit"
+      // If your browser logs fail here, tell mình: mình sẽ swap sang "synth_drum" hoặc "room_kit" tùy bộ SF.
+      drumKit = await Soundfont.instrument(audioCtx, "standard_kit", {soundfont:"FluidR3_GM", nameToUrl});
+      bassIns = await Soundfont.instrument(audioCtx, "acoustic_bass", {soundfont:"FluidR3_GM", nameToUrl});
+      guitar  = await Soundfont.instrument(audioCtx, "nylon_guitar",  {soundfont:"FluidR3_GM", nameToUrl});
+      strings = await Soundfont.instrument(audioCtx, "string_ensemble_1", {soundfont:"FluidR3_GM", nameToUrl});
+
+      // warm-up: trigger tiny silent notes to reduce first-hit lag
+      const t = audioCtx.currentTime + 0.02;
+      bassIns.play(36, t, {gain:0.0001, duration:0.02});
+      guitar.play(60, t, {gain:0.0001, duration:0.02});
+      strings.play(72, t, {gain:0.0001, duration:0.02});
+      drumKit.play(DR.KICK, t, {gain:0.0001, duration:0.02});
+
+      soundsReady = true;
+      loadTxt.textContent = "OK";
+      btnLoad.textContent = "Sounds Loaded";
+    } catch(err){
+      console.error(err);
+      soundsReady = false;
+      loadTxt.textContent = "Lỗi";
+      btnLoad.classList.add("danger");
+      btnLoad.textContent = "Load Failed";
+      alert("Load SoundFont lỗi (CDN/CORS/mạng hoặc tên drum kit không khớp). Nếu bị lỗi, gửi console log cho mình (dòng instrument name), mình chỉnh đúng bộ kit.");
+    }
+  }
+
+  // =========================
+  // 5) Select chord
+  // =========================
+  function selectHour(hour, source){
+    if(!CHORDS_BY_HOUR[hour]) return;
+    currentHour = hour;
+    currentChordEl.textContent = CHORDS_BY_HOUR[hour].name;
+    setActiveSlot(hour);
+    modeTxt.textContent = (source === "compass") ? "Compass" : "Tap";
+  }
+  selectHour(12, "tap");
+
+  // =========================
+  // 6) Styles UI
+  // =========================
+  STYLES.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s; opt.textContent = s;
+    styleSelect.appendChild(opt);
+  });
+  styleSelect.value = currentStyle;
+  currentStyleEl.textContent = currentStyle;
+
+  styleSelect.addEventListener("change", () => {
+    currentStyle = styleSelect.value;
+    currentStyleEl.textContent = currentStyle;
+    currentPattern = styleToPattern(currentStyle);
+  });
+
+  // Tempo / Transpose
+  function refreshNumbers(){
+    tempoTxt.textContent = String(tempo);
+    transposeTxt.textContent = String(transpose);
+  }
+  refreshNumbers();
+
+  const clampTP = (v) => clamp(v, -24, 24);
+  const clampTempo = (v) => clamp(v, 40, 220);
+
+  tpDown.addEventListener("click", () => { transpose = clampTP(transpose-1); refreshNumbers(); });
+  tpUp.addEventListener("click", () => { transpose = clampTP(transpose+1); refreshNumbers(); });
+  tpReset.addEventListener("click", () => { transpose = 0; refreshNumbers(); });
+
+  tempoDown.addEventListener("click", () => { tempo = clampTempo(tempo-2); refreshNumbers(); });
+  tempoUp.addEventListener("click", () => { tempo = clampTempo(tempo+2); refreshNumbers(); });
+  tempoReset.addEventListener("click", () => { tempo = 92; refreshNumbers(); });
+
+  // Start/Stop
+  btnStartStop.addEventListener("click", async () => {
+    ensureAudio();
+    await audioCtx.resume?.();
+    if(isPlaying) stop(); else start();
+  });
+  btnStop.addEventListener("click", () => stop());
+  btnLoad.addEventListener("click", () => loadSounds());
+
+  // =========================
+  // 7) Compass / Orientation
+  // =========================
+  let lastAutoPickAt = 0;
+
+  function hourFromHeadingDeg(headingDeg){
+    const normalized = (headingDeg % 360 + 360) % 360;
+    let hour = Math.round(normalized / 30);
+    if(hour === 0) hour = 12;
+    return hour;
+  }
+
+  function nearestChordHour(fromHour){
+    if(CHORDS_BY_HOUR[fromHour]) return fromHour;
+    for(let d=1; d<=6; d++){
+      const h1 = ((fromHour - d - 1 + 12) % 12) + 1;
+      const h2 = ((fromHour + d - 1) % 12) + 1;
+      if(CHORDS_BY_HOUR[h1]) return h1;
+      if(CHORDS_BY_HOUR[h2]) return h2;
+    }
+    return 12;
+  }
+
+  function updateHand(headingDeg){
+    handEl.style.transform = `translateX(-50%) translateY(-100%) rotate(${headingDeg}deg)`;
+  }
+
+  function getHeadingFromEvent(e){
+    if(typeof e.webkitCompassHeading === "number") return e.webkitCompassHeading;
+    if(typeof e.alpha === "number") return (360 - e.alpha) % 360;
+    return null;
+  }
+
+  function handleOrientation(e){
+    const h = getHeadingFromEvent(e);
+    if(h === null) return;
+    headingTxt.textContent = `${Math.round(h)}°`;
+    updateHand(h);
+
+    const now = performance.now();
+    const rawHour = hourFromHeadingDeg(h);
+    const pick = nearestChordHour(rawHour);
+
+    if(pick !== currentHour && now - lastAutoPickAt > 120){
+      selectHour(pick, "compass");
+      lastAutoPickAt = now;
+    }
+  }
+
+  async function enableCompass(){
+    try{
+      if(typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function"){
+        const res = await DeviceOrientationEvent.requestPermission();
+        if(res !== "granted") throw new Error("Permission not granted");
+      }
+      window.addEventListener("deviceorientation", handleOrientation, true);
+      btnCompass.textContent = "Compass Enabled";
+      btnCompass.classList.add("primary");
+      modeTxt.textContent = "Compass";
+    } catch(err){
+      console.warn(err);
+      btnCompass.textContent = "Compass Blocked";
+      btnCompass.classList.add("danger");
+      alert("Không bật được la bàn. Trên iPhone: Settings > Safari > Motion & Orientation Access (bật), rồi thử lại.");
+    }
+  }
+  btnCompass.addEventListener("click", () => enableCompass());
+  updateHand(0);
+
+  // =========================
+  // 8) WakeLock (best effort)
+  // =========================
+  let wakeLock = null;
+  async function requestWakeLock(){
+    try{
+      if("wakeLock" in navigator){
+        wakeLock = await navigator.wakeLock.request("screen");
+      }
+    } catch(e){}
+  }
+  async function releaseWakeLock(){
+    try{ await wakeLock?.release?.(); } catch(e){}
+    wakeLock = null;
+  }
+  const _start = start, _stop = stop;
+  start = async function(){ await requestWakeLock(); await _start(); }
+  stop  = async function(){ _stop(); await releaseWakeLock(); }
+
+})();
+</script>
+</body>
+</html>

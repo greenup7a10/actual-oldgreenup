@@ -1,0 +1,420 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --color-primary: #485C11;
+    --color-cream: #DFECC6;
+    --color-sage: #8E9C78;
+    --color-black: #000000;
+    --color-dark-gray: #6F6F6F;
+    --color-medium-gray: #929292;
+    
+    --font-serif: 'Crimson Text', serif;
+    --font-sans: 'DM Sans', sans-serif;
+    --font-mono: 'Roboto Mono', monospace;
+    --font-flex: 'Roboto Flex', sans-serif;
+}
+
+body {
+    font-family: var(--font-flex);
+    background-color: var(--color-black);
+    color: var(--color-cream);
+    overflow: hidden;
+}
+
+/* IDE Container */
+.ide-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-black);
+}
+
+/* Top Navigation Bar */
+.top-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background-color: var(--color-black);
+    border-bottom: 1px solid var(--color-primary);
+}
+
+.nav-left {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo-icon {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-primary);
+    border-radius: 8px;
+    color: var(--color-cream);
+}
+
+.logo-text {
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 400;
+    color: var(--color-cream);
+    letter-spacing: 0.5px;
+}
+
+.main-menu {
+    display: flex;
+    gap: 16px;
+    margin-left: 32px;
+}
+
+.menu-item {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-sage);
+    background: transparent;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.menu-item:hover {
+    background-color: rgba(142, 156, 120, 0.1);
+}
+
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    background-color: var(--color-dark-gray);
+    border-radius: 20px;
+}
+
+.search-box svg {
+    color: var(--color-medium-gray);
+}
+
+.search-input {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--color-cream);
+    width: 128px;
+}
+
+.search-input::placeholder {
+    color: var(--color-medium-gray);
+}
+
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: none;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+
+.btn:hover {
+    opacity: 0.8;
+}
+
+.btn-save {
+    background-color: var(--color-sage);
+    color: var(--color-black);
+}
+
+.btn-run {
+    background-color: var(--color-primary);
+    color: var(--color-cream);
+}
+
+/* Main Content */
+.main-content {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 0;
+    gap: 24px;
+    background-color: var(--color-black);
+    border-right: 1px solid var(--color-dark-gray);
+}
+
+.sidebar-btn {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: var(--color-medium-gray);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sidebar-btn:hover {
+    background-color: rgba(142, 156, 120, 0.1);
+}
+
+.sidebar-btn.active {
+    background-color: var(--color-primary);
+    color: var(--color-cream);
+}
+
+.sidebar-spacer {
+    flex: 1;
+}
+
+/* File Explorer */
+.file-explorer {
+    width: 256px;
+    background-color: var(--color-black);
+    border-right: 1px solid var(--color-dark-gray);
+    overflow-y: auto;
+}
+
+.explorer-header {
+    padding: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--color-medium-gray);
+}
+
+.file-tree {
+    padding: 0 16px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-cream);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 4px;
+}
+
+.file-item:hover {
+    background-color: rgba(142, 156, 120, 0.05);
+}
+
+.file-item.active {
+    background-color: var(--color-primary);
+    color: var(--color-cream);
+}
+
+.file-item.folder {
+    color: var(--color-cream);
+}
+
+.file-item.folder svg {
+    color: var(--color-primary);
+}
+
+.file-item:not(.folder) {
+    padding-left: 32px;
+}
+
+.file-item:not(.active):not(.folder) {
+    color: var(--color-sage);
+}
+
+/* Editor Container */
+.editor-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-black);
+}
+
+/* Tab Bar */
+.tab-bar {
+    display: flex;
+    align-items: center;
+    background-color: var(--color-black);
+    border-bottom: 1px solid var(--color-dark-gray);
+}
+
+.tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--color-cream);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+}
+
+.tab.active {
+    border-bottom-color: var(--color-primary);
+}
+
+.tab svg {
+    color: var(--color-primary);
+}
+
+/* Editor Wrapper */
+.editor-wrapper {
+    flex: 1;
+    padding: 24px;
+    background-color: var(--color-black);
+    overflow: auto;
+}
+
+.code-editor {
+    width: 100%;
+    height: 100%;
+    background-color: var(--color-black);
+    color: var(--color-cream);
+    font-family: var(--font-mono);
+    font-size: 14px;
+    line-height: 1.6;
+    border: none;
+    outline: none;
+    resize: none;
+    caret-color: var(--color-primary);
+}
+
+/* Bottom Panel */
+.bottom-panel {
+    height: 224px;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-black);
+    border-top: 2px solid var(--color-primary);
+}
+
+.panel-tabs {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--color-dark-gray);
+}
+
+.panel-tab {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--color-medium-gray);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.panel-tab:hover {
+    color: var(--color-cream);
+}
+
+.panel-tab.active {
+    color: var(--color-cream);
+    border-bottom-color: var(--color-primary);
+}
+
+.panel-content {
+    flex: 1;
+    padding: 16px;
+    overflow: auto;
+}
+
+#output-display {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--color-cream);
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+/* Status Bar */
+.status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 16px;
+    background-color: var(--color-primary);
+    border-top: 1px solid var(--color-primary);
+}
+
+.status-left,
+.status-right {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--color-cream);
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--color-black);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--color-dark-gray);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--color-medium-gray);
+}

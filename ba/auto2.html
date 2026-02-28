@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Compass Chord Accompaniment</title>
+  <style>
+    :root{
+      --bg:#0b0f14;
+      --card:#121a24;
+      --card2:#0f1620;
+      --text:#e8eef7;
+      --muted:#9fb0c6;
+      --accent:#5ee1ff;
+      --danger:#ff5e7a;
+      --ok:#5effa1;
+      --ring:#233246;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; background:radial-gradient(1200px 900px at 50% -10%, #172338 0%, var(--bg) 50%);
+      color:var(--text); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      min-height:100vh; display:flex; flex-direction:column;
+    }
+    header{
+      padding:16px 16px 8px;
+      display:flex; align-items:flex-end; justify-content:space-between; gap:12px;
+    }
+    header h1{margin:0; font-size:16px; letter-spacing:.2px; color:var(--text)}
+    header .sub{font-size:12px; color:var(--muted)}
+    .wrap{padding:12px 16px 18px; display:grid; gap:12px; grid-template-columns: 1fr; max-width:980px; width:100%; margin:0 auto;}
+    .row{display:grid; gap:12px; grid-template-columns: 1fr;}
+    @media (min-width:860px){
+      .row{grid-template-columns: 1.2fr .8fr;}
+    }
+    .card{
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.07);
+      border-radius:16px; padding:14px; box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .controls{
+      display:grid; gap:10px;
+      grid-template-columns: 1fr;
+    }
+    .controls .grid{
+      display:grid; gap:10px;
+      grid-template-columns: 1fr 1fr;
+    }
+    .controls .grid3{
+      display:grid; gap:10px;
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+    .btn{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:var(--text);
+      padding:12px 12px;
+      border-radius:14px;
+      font-size:14px;
+      display:flex; align-items:center; justify-content:center; gap:10px;
+      user-select:none;
+      touch-action: manipulation;
+    }
+    .btn:active{transform: translateY(1px)}
+    .btn.primary{border-color: rgba(94,225,255,.35); background: rgba(94,225,255,.10);}
+    .btn.danger{border-color: rgba(255,94,122,.35); background: rgba(255,94,122,.10);}
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:999px;
+      background: rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08);
+      font-size:12px; color:var(--muted);
+    }
+    select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+    }
+    .meta{
+      display:flex; flex-wrap:wrap; gap:8px;
+    }
+    .meta .pill strong{color:var(--text); font-weight:600}
+    .hint{font-size:12px; color:var(--muted); line-height:1.4}
+    .hint b{color:var(--text)}
+    /* Clock */
+    .clockBox{
+      display:grid; gap:12px;
+      align-items:center;
+    }
+    .clock{
+      position:relative;
+      width:min(82vw, 420px);
+      aspect-ratio:1/1;
+      margin:0 auto;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(255,255,255,.06), rgba(255,255,255,.02) 55%, rgba(0,0,0,0) 56%),
+        radial-gradient(circle at 50% 50%, rgba(94,225,255,.10) 0%, rgba(0,0,0,0) 55%);
+      border:1px solid rgba(255,255,255,.08);
+      box-shadow: inset 0 0 0 10px rgba(0,0,0,.12), 0 20px 70px rgba(0,0,0,.45);
+      overflow:hidden;
+    }
+    .ring{
+      position:absolute; inset:14px;
+      border-radius:999px;
+      border:1px dashed rgba(255,255,255,.10);
+    }
+    .center{
+      position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+      width:12px; height:12px; border-radius:999px;
+      background: var(--accent);
+      box-shadow: 0 0 0 6px rgba(94,225,255,.15), 0 0 30px rgba(94,225,255,.25);
+    }
+    .hand{
+      position:absolute; left:50%; top:50%;
+      width:2px; height:42%;
+      transform-origin: bottom center;
+      background: linear-gradient(180deg, rgba(94,225,255,.0), rgba(94,225,255,.95));
+      transform: translateX(-50%) translateY(-100%) rotate(0deg);
+      border-radius:999px;
+      filter: drop-shadow(0 0 12px rgba(94,225,255,.3));
+    }
+    .tick{
+      position:absolute;
+      left:50%; top:50%;
+      width:10px; height:10px;
+      transform: translate(-50%,-50%);
+      border-radius:999px;
+      background: rgba(255,255,255,.12);
+    }
+    .slot{
+      position:absolute;
+      left:50%; top:50%;
+      width:96px; max-width:28%;
+      transform: translate(-50%,-50%);
+      text-align:center;
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(18,26,36,.75);
+      border:1px solid rgba(255,255,255,.08);
+      color:var(--muted);
+      font-size:13px;
+      user-select:none;
+      cursor:pointer;
+      touch-action: manipulation;
+      backdrop-filter: blur(8px);
+    }
+    .slot strong{display:block; color:var(--text); font-weight:700; font-size:14px}
+    .slot.empty{opacity:.35}
+    .slot.active{
+      border-color: rgba(94,225,255,.45);
+      box-shadow: 0 0 0 4px rgba(94,225,255,.12), 0 18px 40px rgba(0,0,0,.35);
+      color: var(--text);
+    }
+    .slot.active strong{color:var(--accent)}
+    .slot .mini{font-size:11px; color:var(--muted)}
+    .statusLine{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding:10px 12px;
+      border-radius:14px;
+      background: rgba(255,255,255,.03);
+      border:1px solid rgba(255,255,255,.07);
+    }
+    .statusLine .left{display:flex; flex-direction:column; gap:4px}
+    .statusLine .title{font-size:14px; font-weight:700}
+    .statusLine .small{font-size:12px; color:var(--muted)}
+    .badge{
+      font-size:12px; padding:8px 10px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.04);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+    .badge.on{border-color: rgba(94,255,161,.35); background: rgba(94,255,161,.10); color: var(--ok)}
+    .badge.off{border-color: rgba(255,94,122,.35); background: rgba(255,94,122,.10); color: var(--danger)}
+    .footerNote{
+      padding:0 16px 18px;
+      max-width:980px; width:100%; margin:0 auto;
+      color:var(--muted); font-size:12px; line-height:1.45;
+      opacity:.92;
+    }
+    code.inline{background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); padding:2px 6px; border-radius:8px}
+  </style>
+</head>
+
+<body>	
+  <header>
+    <div>
+      <h1>Compass Chord Auto Accompaniment</h1>
+      <h1>Copyright: STEAM+ (smstechnologyglobal@gmail.com)</h1>
+      <div class="sub">Xoay người để chọn hợp âm • hoặc chạm vào “giờ” trên đồng hồ</div>
+    </div>
+    <div class="meta">
+      <span class="pill">Hướng: <strong id="headingTxt">--°</strong></span>
+      <span class="pill">Chế độ: <strong id="modeTxt">Tap/Compass</strong></span>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="row">
+      <div class="card clockBox">
+        <div class="statusLine">
+          <div class="left">
+            <div class="title">Hợp âm hiện tại: <span id="currentChord" style="color:var(--accent)">Am</span></div>
+            <div class="small">Style: <span id="currentStyle">Ballad</span> • Tempo: <span id="tempoTxt">92</span> BPM • Transpose: <span id="transposeTxt">0</span></div>
+          </div>
+          <div id="playBadge" class="badge off">STOPPED</div>
+        </div>
+
+        <div class="clock" id="clock">
+          <div class="ring"></div>
+          <div class="hand" id="hand"></div>
+          <div class="center"></div>
+          <!-- slots injected by JS -->
+        </div>
+
+        <div class="hint">
+          <b>iPhone/iPad:</b> bạn phải bấm <code class="inline">Enable Compass</code> trước (Safari chặn cảm biến nếu chưa xin quyền).<br/>
+          <b>Android:</b> thường chạy luôn. Nếu không, cũng bấm nút đó.
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="controls">
+          <div>
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:8px;">
+              <div style="font-weight:700">Chọn điệu (Style)</div>
+              <button class="btn" id="btnCompass">Enable Compass</button>
+            </div>
+            <select id="styleSelect"></select>
+            <div class="hint" style="margin-top:8px">
+              “Nhạc cụ” là synth (Web Audio) gồm: <b>Drums</b> (kick/snare/hat), <b>Bass</b>, <b>Piano/Comp</b>. Muốn “y như band thật” thì phải dùng sample hoặc SoundFont (file ngoài) — bạn chưa đưa, nên mình làm bản offline chạy ngay.
+            </div>
+          </div>
+
+          <div class="grid">
+            <button class="btn primary" id="btnStartStop">Start</button>
+            <button class="btn danger" id="btnStop">Stop</button>
+          </div>
+
+          <div class="grid3">
+            <button class="btn" id="tpDown">Transpose -</button>
+            <button class="btn" id="tpReset">Transpose 0</button>
+            <button class="btn" id="tpUp">Transpose +</button>
+          </div>
+
+          <div class="grid3">
+            <button class="btn" id="tempoDown">Tempo -</button>
+            <button class="btn" id="tempoReset">Tempo 92</button>
+            <button class="btn" id="tempoUp">Tempo +</button>
+          </div>
+
+          <div class="hint">
+            <b>Cách chọn hợp âm bằng hướng:</b> đồng hồ có 12 hướng (mỗi “giờ” = 30°). Khi bạn xoay, kim sẽ quay theo la bàn và tự chọn “giờ” gần nhất có hợp âm.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footerNote">
+    Nếu bạn muốn nâng cấp “hay và tinh tế như arranger keyboard thật” (Bolero/Rumba/Cha-cha… có fill-in, intro, variation A/B/C/D, ghost notes, swing, humanize),
+    mình sẽ mở rộng sequencer + thêm sample kit (drum kit) và comp voicing (piano/guitar).
+  </div>
+
+<script>
+(() => {
+  // ----------------------------
+  // 1) Chords on clock hours
+  // ----------------------------
+  // Hours: 12,1,2,3,4,5,6,7,8,9,10,11 (we only fill the ones user specified)
+  // User text had "xin lỗi" at 2 o'clock -> treat as Bm by default.
+  const CHORDS_BY_HOUR = {
+    12: { name: "Am",  quality: "min", root: "A" },
+    1:  { name: "Bdim",quality: "dim", root: "B" },
+    2:  { name: "Bm",  quality: "min", root: "B" },   // <-- sửa ở đây nếu bạn muốn khác
+    3:  { name: "C",   quality: "maj", root: "C" },
+    5:  { name: "Dm",  quality: "min", root: "D" },
+    7:  { name: "E7",  quality: "7",   root: "E" },
+    8:  { name: "F",   quality: "maj", root: "F" },
+    10: { name: "G",   quality: "maj", root: "G" }
+  };
+
+  // ----------------------------
+  // 2) Styles (patterns)
+  // ----------------------------
+  // 16 steps per bar, time signature 4/4
+  // Each style defines: tempo default override optional + drum pattern + bass rhythm + comp rhythm
+  const STYLES = [
+    "Ballad","Disco","Valse","Slow Sup","Blues","Slow Rock","Habanera","Bolero","Rumba","Cha-cha-cha","Boston","Fox","Paso Doble","Reggae"
+  ];
+
+  // Helper patterns (16 steps, 0/1)
+  const P = {
+    // Kick / Snare / Hat templates
+    ballad: {
+      kick:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+      comp:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      swing: 0.00
+    },
+    disco: {
+      kick:  [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0], // four on the floor
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      hat:   [1,1,1,1, 1,1,1,1, 1,1,1,1, 1,1,1,1],
+      bass:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      comp:  [0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1],
+      swing: 0.00
+    },
+    blues: {
+      kick:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1], // walking-ish
+      comp:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      swing: 0.14
+    },
+    slowRock: {
+      kick:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,1,0,0],
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+      comp:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      swing: 0.05
+    },
+    habanera: {
+      // classic habanera rhythm (approx)
+      kick:  [1,0,0,0, 0,0,0,1, 0,0,1,0, 0,1,0,0],
+      snare: [0,0,1,0, 0,1,0,0, 1,0,0,0, 0,0,1,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,0,1, 0,0,0,1, 1,0,0,1, 0,0,0,1],
+      comp:  [0,0,1,0, 0,1,0,0, 0,0,1,0, 0,1,0,0],
+      swing: 0.08
+    },
+    bolero: {
+      kick:  [1,0,0,0, 0,1,0,0, 1,0,0,0, 0,1,0,0],
+      snare: [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      hat:   [1,0,0,1, 1,0,0,1, 1,0,0,1, 1,0,0,1],
+      bass:  [1,0,0,0, 0,1,0,0, 1,0,0,0, 0,1,0,0],
+      comp:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      swing: 0.07
+    },
+    rumba: {
+      kick:  [1,0,0,0, 0,0,1,0, 0,1,0,0, 1,0,0,0],
+      snare: [0,0,1,0, 0,1,0,0, 1,0,0,1, 0,0,1,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,0,1, 0,1,0,0, 1,0,0,1, 0,1,0,0],
+      comp:  [0,0,1,0, 0,1,0,0, 0,0,1,0, 0,1,0,0],
+      swing: 0.09
+    },
+    chacha: {
+      kick:  [1,0,0,0, 0,0,1,0, 1,0,1,0, 0,0,1,0],
+      snare: [0,0,1,0, 0,1,0,0, 1,0,0,1, 0,0,1,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,0,1, 0,1,0,0, 1,0,0,1, 0,1,0,0],
+      comp:  [0,0,1,0, 0,1,0,0, 0,0,1,0, 0,1,0,0],
+      swing: 0.02
+    },
+    passo: {
+      kick:  [1,0,0,0, 1,0,1,0, 1,0,0,0, 1,0,1,0],
+      snare: [0,0,1,0, 0,1,0,0, 1,0,0,1, 0,0,1,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      comp:  [0,1,0,0, 0,1,0,0, 0,1,0,0, 0,1,0,0],
+      swing: 0.00
+    },
+    reggae: {
+      kick:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      hat:   [1,0,1,0, 1,0,1,0, 1,0,1,0, 1,0,1,0],
+      bass:  [1,0,0,0, 0,0,1,0, 1,0,0,0, 0,0,1,0],
+      comp:  [0,1,0,1, 0,1,0,1, 0,1,0,1, 0,1,0,1], // offbeat chops
+      swing: 0.00
+    },
+    waltz: {
+      // 3/4 feel packed in 16 steps (we'll accent 1-2-3)
+      kick:  [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+      snare: [0,0,0,0, 1,0,0,0, 0,0,0,0, 1,0,0,0],
+      hat:   [1,0,0,0, 1,0,0,0, 1,0,0,0, 1,0,0,0],
+      bass:  [1,0,0,0, 0,0,0,0, 1,0,0,0, 0,0,0,0],
+      comp:  [0,0,1,0, 0,0,1,0, 0,0,1,0, 0,0,1,0],
+      swing: 0.00
+    }
+  };
+
+  function styleToPattern(name){
+    const n = name.toLowerCase();
+    if(n.includes("disco")) return P.disco;
+    if(n.includes("valse") || n.includes("boston") || n.includes("fox")) return P.waltz;
+    if(n.includes("slow rock")) return P.slowRock;
+    if(n.includes("blue")) return P.blues;
+    if(n.includes("habanera")) return P.habanera;
+    if(n.includes("bolero") || n.includes("slow sup")) return P.bolero;
+    if(n.includes("rumba")) return P.rumba;
+    if(n.includes("cha")) return P.chacha;
+    if(n.includes("paso")) return P.passo;
+    if(n.includes("rigg") || n.includes("regga")) return P.reggae;
+    return P.ballad;
+  }
+
+  // ----------------------------
+  // 3) UI: build clock slots
+  // ----------------------------
+  const clockEl = document.getElementById("clock");
+  const handEl  = document.getElementById("hand");
+  const headingTxt = document.getElementById("headingTxt");
+  const modeTxt = document.getElementById("modeTxt");
+  const currentChordEl = document.getElementById("currentChord");
+  const currentStyleEl = document.getElementById("currentStyle");
+  const tempoTxt = document.getElementById("tempoTxt");
+  const transposeTxt = document.getElementById("transposeTxt");
+  const playBadge = document.getElementById("playBadge");
+
+  const styleSelect = document.getElementById("styleSelect");
+  const btnCompass = document.getElementById("btnCompass");
+
+  const btnStartStop = document.getElementById("btnStartStop");
+  const btnStop = document.getElementById("btnStop");
+  const tpDown = document.getElementById("tpDown");
+  const tpUp = document.getElementById("tpUp");
+  const tpReset = document.getElementById("tpReset");
+  const tempoDown = document.getElementById("tempoDown");
+  const tempoUp = document.getElementById("tempoUp");
+  const tempoReset = document.getElementById("tempoReset");
+
+  // Inject 12 slots
+  const slotEls = {};
+  for(let h=1; h<=12; h++){
+    const slot = document.createElement("div");
+    slot.className = "slot";
+    slot.dataset.hour = String(h);
+
+    const chord = CHORDS_BY_HOUR[h];
+    if(!chord){
+      slot.classList.add("empty");
+      slot.innerHTML = `<strong>—</strong><div class="mini">${h} giờ</div>`;
+    } else {
+      slot.innerHTML = `<strong>${chord.name}</strong><div class="mini">${h} giờ</div>`;
+    }
+
+    // Position around the clock:
+    // hour 12 at top. angleDeg = (h % 12) * 30 - 90
+    const angleDeg = ((h % 12) * 30) - 90;
+    const radius = 44; // %
+    const x = 50 + radius * Math.cos(angleDeg * Math.PI/180);
+    const y = 50 + radius * Math.sin(angleDeg * Math.PI/180);
+    slot.style.left = x + "%";
+    slot.style.top  = y + "%";
+
+    slot.addEventListener("click", () => {
+      const c = CHORDS_BY_HOUR[h];
+      if(!c) return;
+      selectHour(h, "tap");
+    });
+
+    clockEl.appendChild(slot);
+    slotEls[h] = slot;
+  }
+
+  // ----------------------------
+  // 4) Music: Web Audio engine
+  // ----------------------------
+  let audioCtx = null;
+  let master = null;
+  let drumBus = null, bassBus = null, compBus = null;
+
+  // State
+  let isPlaying = false;
+  let tempo = 92;
+  let transpose = 0; // semitones
+  let currentHour = 12;
+  let currentStyle = "Ballad";
+  let currentPattern = styleToPattern(currentStyle);
+
+  // Scheduler
+  let currentStep = 0;
+  let nextNoteTime = 0;
+  const lookahead = 25;          // ms
+  const scheduleAheadTime = 0.12; // sec
+  let timerID = null;
+
+  function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+  function ensureAudio(){
+    if(audioCtx) return;
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    master = audioCtx.createGain();
+    master.gain.value = 0.75;
+    master.connect(audioCtx.destination);
+
+    drumBus = audioCtx.createGain(); drumBus.gain.value = 0.85; drumBus.connect(master);
+    bassBus = audioCtx.createGain(); bassBus.gain.value = 0.70; bassBus.connect(master);
+    compBus = audioCtx.createGain(); compBus.gain.value = 0.55; compBus.connect(master);
+
+    // gentle limiter-ish via dynamics compressor
+    const comp = audioCtx.createDynamicsCompressor();
+    comp.threshold.value = -18;
+    comp.knee.value = 12;
+    comp.ratio.value = 4;
+    comp.attack.value = 0.003;
+    comp.release.value = 0.18;
+    master.disconnect();
+    master.connect(comp);
+    comp.connect(audioCtx.destination);
+  }
+
+  // --- Note utilities
+  const NOTE_TO_SEMI = {C:0, "C#":1, Db:1, D:2, "D#":3, Eb:3, E:4, F:5, "F#":6, Gb:6, G:7, "G#":8, Ab:8, A:9, "A#":10, Bb:10, B:11};
+  function midiFromNoteName(name, octave){
+    // name like "C", "F#", "Bb"
+    const semi = NOTE_TO_SEMI[name];
+    return 12*(octave+1) + semi;
+  }
+  function freqFromMidi(m){ return 440 * Math.pow(2, (m-69)/12); }
+
+  function chordToMidi(chordName){
+    // returns MIDI notes for triad / seventh in a comfortable range
+    // Root around octave 4 for comp, bass around octave 2.
+    // Parse root + quality
+    // Examples: Am, Bdim, C, Dm, E7, F, G, Bm
+    let root = chordName[0].toUpperCase();
+    let rest = chordName.slice(1);
+    if(rest.startsWith("#") || rest.startsWith("b")){
+      root += rest[0];
+      rest = rest.slice(1);
+    }
+    let quality = "maj";
+    if(rest.toLowerCase().includes("dim")) quality = "dim";
+    else if(rest.startsWith("m")) quality = "min";
+    else if(rest.includes("7")) quality = "7";
+
+    const rootMidiComp = midiFromNoteName(root, 4) + transpose;
+    const rootMidiBass = midiFromNoteName(root, 2) + transpose;
+
+    // intervals
+    let intervals = [0,4,7]; // maj
+    if(quality==="min") intervals = [0,3,7];
+    if(quality==="dim") intervals = [0,3,6];
+    if(quality==="7") intervals = [0,4,7,10]; // dom7
+
+    const comp = intervals.map(i => rootMidiComp + i);
+    const bass = [rootMidiBass, rootMidiBass + 7]; // root + fifth (optional)
+    return {comp, bass, rootMidiComp, rootMidiBass};
+  }
+
+  // --- Drum synth
+  function playKick(time){
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = "sine";
+    o.frequency.setValueAtTime(120, time);
+    o.frequency.exponentialRampToValueAtTime(45, time + 0.08);
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(1.0, time + 0.004);
+    g.gain.exponentialRampToValueAtTime(0.0001, time + 0.18);
+    o.connect(g); g.connect(drumBus);
+    o.start(time); o.stop(time + 0.22);
+
+    // click
+    const n = audioCtx.createBufferSource();
+    const buf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate*0.02), audioCtx.sampleRate);
+    const data = buf.getChannelData(0);
+    for(let i=0;i<data.length;i++){ data[i] = (Math.random()*2-1) * Math.exp(-i/400); }
+    n.buffer = buf;
+    const ng = audioCtx.createGain();
+    ng.gain.setValueAtTime(0.15, time);
+    ng.gain.exponentialRampToValueAtTime(0.0001, time+0.02);
+    n.connect(ng); ng.connect(drumBus);
+    n.start(time); n.stop(time+0.03);
+  }
+
+  function playSnare(time){
+    // noise burst + tone
+    const noiseBuf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate*0.12), audioCtx.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for(let i=0;i<data.length;i++){ data[i] = (Math.random()*2-1) * Math.exp(-i/2500); }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = noiseBuf;
+
+    const hp = audioCtx.createBiquadFilter();
+    hp.type = "highpass"; hp.frequency.value = 1200;
+
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(0.65, time+0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, time+0.12);
+
+    noise.connect(hp); hp.connect(g); g.connect(drumBus);
+    noise.start(time); noise.stop(time+0.13);
+
+    const o = audioCtx.createOscillator();
+    const og = audioCtx.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(220, time);
+    og.gain.setValueAtTime(0.0001, time);
+    og.gain.exponentialRampToValueAtTime(0.25, time+0.002);
+    og.gain.exponentialRampToValueAtTime(0.0001, time+0.08);
+    o.connect(og); og.connect(drumBus);
+    o.start(time); o.stop(time+0.09);
+  }
+
+  function playHat(time, open=false){
+    const noiseBuf = audioCtx.createBuffer(1, Math.floor(audioCtx.sampleRate*(open?0.18:0.05)), audioCtx.sampleRate);
+    const data = noiseBuf.getChannelData(0);
+    for(let i=0;i<data.length;i++){ data[i] = (Math.random()*2-1) * Math.exp(-i/(open?9000:2500)); }
+    const noise = audioCtx.createBufferSource();
+    noise.buffer = noiseBuf;
+    const bp = audioCtx.createBiquadFilter();
+    bp.type = "bandpass"; bp.frequency.value = 9000; bp.Q.value = 0.7;
+    const hp = audioCtx.createBiquadFilter();
+    hp.type = "highpass"; hp.frequency.value = 6000;
+
+    const g = audioCtx.createGain();
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(open?0.18:0.12, time+0.0015);
+    g.gain.exponentialRampToValueAtTime(0.0001, time+(open?0.16:0.045));
+
+    noise.connect(bp); bp.connect(hp); hp.connect(g); g.connect(drumBus);
+    noise.start(time); noise.stop(time+(open?0.18:0.06));
+  }
+
+  // --- Bass synth
+  function playBass(freq, time, dur){
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    const f = audioCtx.createBiquadFilter();
+    o.type = "sawtooth";
+    o.frequency.setValueAtTime(freq, time);
+
+    f.type = "lowpass";
+    f.frequency.setValueAtTime(500, time);
+    f.Q.value = 0.9;
+
+    g.gain.setValueAtTime(0.0001, time);
+    g.gain.exponentialRampToValueAtTime(0.55, time+0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, time+dur);
+
+    o.connect(f); f.connect(g); g.connect(bassBus);
+    o.start(time); o.stop(time+dur+0.03);
+  }
+
+  // --- Comp (piano-ish)
+  function playComp(midiNotes, time, dur){
+    // simple additive-ish piano: sine + triangle, fast attack, short decay
+    midiNotes.forEach((m, idx) => {
+      const freq = freqFromMidi(m);
+      const o1 = audioCtx.createOscillator();
+      const o2 = audioCtx.createOscillator();
+      const g = audioCtx.createGain();
+      const f = audioCtx.createBiquadFilter();
+
+      o1.type="sine";     o2.type="triangle";
+      o1.frequency.setValueAtTime(freq, time);
+      o2.frequency.setValueAtTime(freq*2, time);
+
+      f.type="lowpass";
+      f.frequency.setValueAtTime(1600, time);
+      f.Q.value = 0.8;
+
+      const vel = 0.18 * (idx===0?1.15:1.0);
+      g.gain.setValueAtTime(0.0001, time);
+      g.gain.exponentialRampToValueAtTime(vel, time+0.006);
+      g.gain.exponentialRampToValueAtTime(0.0001, time+dur);
+
+      o1.connect(f); o2.connect(f);
+      f.connect(g); g.connect(compBus);
+
+      o1.start(time); o2.start(time);
+      o1.stop(time+dur+0.03); o2.stop(time+dur+0.03);
+    });
+  }
+
+  // --- Sequencing
+  function secondsPerStep(){
+    // 16 steps per bar in 4/4 => quarter note = 4 steps
+    return (60 / tempo) / 4;
+  }
+
+  function applySwing(stepTime, stepIndex){
+    const sw = currentPattern.swing || 0;
+    // swing only even 8th pairs: push the "and" (odd steps) a bit
+    // With 16th steps: swing on odd 16ths (1,3,5...)
+    if(sw <= 0) return stepTime;
+    if(stepIndex % 2 === 1){
+      return stepTime + secondsPerStep() * sw;
+    }
+    return stepTime;
+  }
+
+  function scheduleStep(stepIndex, time){
+    const chordInfo = CHORDS_BY_HOUR[currentHour];
+    if(!chordInfo) return;
+    const chord = chordToMidi(chordInfo.name);
+
+    // Drums
+    if(currentPattern.kick[stepIndex]) playKick(time);
+    if(currentPattern.snare[stepIndex]) playSnare(time);
+    if(currentPattern.hat[stepIndex]) playHat(time, false);
+
+    // Bass
+    if(currentPattern.bass[stepIndex]){
+      // alternate root/fifth sometimes
+      const useFifth = (stepIndex % 8 === 6);
+      const midi = useFifth ? chord.rootMidiBass + 7 : chord.rootMidiBass;
+      playBass(freqFromMidi(midi), time, Math.min(0.22, secondsPerStep()*1.6));
+    }
+
+    // Comp
+    if(currentPattern.comp[stepIndex]){
+      // choose voicing
+      let notes = chord.comp.slice(0,3);
+      // spice for 7th chords
+      if(chordInfo.name.includes("7")) notes = chord.comp.slice(0,4);
+      // spread voicing
+      notes = notes.map((m,i)=> m + (i>=2 ? 12 : 0));
+      playComp(notes, time, Math.min(0.35, secondsPerStep()*2.2));
+    }
+  }
+
+  function scheduler(){
+    while(audioCtx && nextNoteTime < audioCtx.currentTime + scheduleAheadTime){
+      const t = applySwing(nextNoteTime, currentStep);
+      scheduleStep(currentStep, t);
+
+      nextNoteTime += secondsPerStep();
+      currentStep = (currentStep + 1) % 16;
+    }
+    timerID = window.setTimeout(scheduler, lookahead);
+  }
+
+  function start(){
+    ensureAudio();
+    audioCtx.resume?.();
+    if(isPlaying) return;
+    isPlaying = true;
+    currentStep = 0;
+    nextNoteTime = audioCtx.currentTime + 0.05;
+    scheduler();
+    updatePlayUI();
+  }
+
+  function stop(){
+    isPlaying = false;
+    if(timerID) { clearTimeout(timerID); timerID = null; }
+    updatePlayUI();
+  }
+
+  function updatePlayUI(){
+    playBadge.classList.toggle("on", isPlaying);
+    playBadge.classList.toggle("off", !isPlaying);
+    playBadge.textContent = isPlaying ? "PLAYING" : "STOPPED";
+    btnStartStop.textContent = isPlaying ? "Pause" : "Start";
+  }
+
+  // ----------------------------
+  // 5) Selecting chord by hour
+  // ----------------------------
+  function setActiveSlot(hour){
+    Object.keys(slotEls).forEach(h => slotEls[h].classList.remove("active"));
+    if(slotEls[hour]) slotEls[hour].classList.add("active");
+  }
+
+  function selectHour(hour, source){
+    const chord = CHORDS_BY_HOUR[hour];
+    if(!chord) return;
+    currentHour = hour;
+    currentChordEl.textContent = chord.name;
+    setActiveSlot(hour);
+
+    // show mode
+    modeTxt.textContent = (source === "compass") ? "Compass" : "Tap";
+  }
+
+  // Initialize default chord
+  selectHour(12, "tap");
+
+  // ----------------------------
+  // 6) Styles UI
+  // ----------------------------
+  STYLES.forEach(s => {
+    const opt = document.createElement("option");
+    opt.value = s; opt.textContent = s;
+    styleSelect.appendChild(opt);
+  });
+  styleSelect.value = currentStyle;
+  currentStyleEl.textContent = currentStyle;
+
+  styleSelect.addEventListener("change", () => {
+    currentStyle = styleSelect.value;
+    currentPattern = styleToPattern(currentStyle);
+    currentStyleEl.textContent = currentStyle;
+  });
+
+  // ----------------------------
+  // 7) Tempo / Transpose controls
+  // ----------------------------
+  function refreshNumbers(){
+    tempoTxt.textContent = String(tempo);
+    transposeTxt.textContent = String(transpose);
+  }
+  refreshNumbers();
+
+  tpDown.addEventListener("click", () => { transpose = clamp(transpose-1, -24, 24); refreshNumbers(); });
+  tpUp.addEventListener("click", () => { transpose = clamp(transpose+1, -24, 24); refreshNumbers(); });
+  tpReset.addEventListener("click", () => { transpose = 0; refreshNumbers(); });
+
+  tempoDown.addEventListener("click", () => { tempo = clamp(tempo-2, 40, 220); refreshNumbers(); });
+  tempoUp.addEventListener("click", () => { tempo = clamp(tempo+2, 40, 220); refreshNumbers(); });
+  tempoReset.addEventListener("click", () => { tempo = 92; refreshNumbers(); });
+
+  // Start/Stop
+  btnStartStop.addEventListener("click", async () => {
+    ensureAudio();
+    await audioCtx.resume?.();
+    if(isPlaying) stop(); else start();
+  });
+  btnStop.addEventListener("click", () => stop());
+
+  // ----------------------------
+  // 8) Compass / Orientation
+  // ----------------------------
+  let compassEnabled = false;
+  let lastHeading = null;
+  let lastAutoPickAt = 0;
+
+  function hourFromHeadingDeg(headingDeg){
+    // headingDeg: 0..360, 0 = North.
+    // We want 12 o'clock at top, so map heading directly to hour positions.
+    // 12 at 0°, 1 at 30°, 2 at 60°...
+    const normalized = (headingDeg % 360 + 360) % 360;
+    let hour = Math.round(normalized / 30);
+    if(hour === 0) hour = 12;
+    return hour;
+  }
+
+  function nearestChordHour(fromHour){
+    // if that hour has no chord, search nearest forward/back
+    if(CHORDS_BY_HOUR[fromHour]) return fromHour;
+    for(let d=1; d<=6; d++){
+      const h1 = ((fromHour - d - 1 + 12) % 12) + 1;
+      const h2 = ((fromHour + d - 1) % 12) + 1;
+      if(CHORDS_BY_HOUR[h1]) return h1;
+      if(CHORDS_BY_HOUR[h2]) return h2;
+    }
+    return 12;
+  }
+
+  function updateHand(headingDeg){
+    // rotate hand: 0° at top => -90 in CSS transform?
+    // Our hand element is drawn upward; rotation 0 should point up.
+    const rot = headingDeg;
+    handEl.style.transform = `translateX(-50%) translateY(-100%) rotate(${rot}deg)`;
+  }
+
+  function onHeading(headingDeg){
+    lastHeading = headingDeg;
+    headingTxt.textContent = `${Math.round(headingDeg)}°`;
+    updateHand(headingDeg);
+
+    // auto-pick chord while rotating, but not too spammy
+    const now = performance.now();
+    const rawHour = hourFromHeadingDeg(headingDeg);
+    const pick = nearestChordHour(rawHour);
+
+    // Throttle + ignore tiny jitter: only change if different and enough time passed
+    if(pick !== currentHour && now - lastAutoPickAt > 120){
+      selectHour(pick, "compass");
+      lastAutoPickAt = now;
+    }
+  }
+
+  function getHeadingFromEvent(e){
+    // iOS Safari provides webkitCompassHeading (0..360)
+    if(typeof e.webkitCompassHeading === "number") return e.webkitCompassHeading;
+
+    // Generic: alpha is rotation around z-axis; but reference differs by device.
+    // We'll map alpha to a "compass-like" heading (best-effort).
+    if(typeof e.alpha === "number"){
+      // Convert alpha to compass heading-ish (0=N)
+      // Many devices: alpha=0 when device faces north. We'll assume that.
+      return (360 - e.alpha) % 360;
+    }
+    return null;
+  }
+
+  function handleOrientation(e){
+    const h = getHeadingFromEvent(e);
+    if(h === null) return;
+    onHeading(h);
+  }
+
+  async function enableCompass(){
+    // Must be triggered by user gesture on iOS
+    try{
+      if(typeof DeviceOrientationEvent !== "undefined" && typeof DeviceOrientationEvent.requestPermission === "function"){
+        const res = await DeviceOrientationEvent.requestPermission();
+        if(res !== "granted") throw new Error("Permission not granted");
+      }
+      window.addEventListener("deviceorientation", handleOrientation, true);
+      compassEnabled = true;
+      btnCompass.textContent = "Compass Enabled";
+      btnCompass.classList.add("primary");
+      modeTxt.textContent = "Compass";
+    } catch(err){
+      btnCompass.textContent = "Compass Blocked";
+      btnCompass.classList.add("danger");
+      console.warn(err);
+      alert("Không bật được la bàn. Trên iPhone: Settings > Safari > Motion & Orientation Access (bật), rồi thử lại.");
+    }
+  }
+
+  btnCompass.addEventListener("click", () => enableCompass());
+
+  // Subtle: if user never enables compass, still show hand at 0°
+  updateHand(0);
+
+  // ----------------------------
+  // 9) Prevent screen sleep while playing (best effort)
+  // ----------------------------
+  let wakeLock = null;
+  async function requestWakeLock(){
+    try{
+      if("wakeLock" in navigator){
+        wakeLock = await navigator.wakeLock.request("screen");
+      }
+    } catch(e){}
+  }
+  async function releaseWakeLock(){
+    try{ await wakeLock?.release?.(); } catch(e){}
+    wakeLock = null;
+  }
+
+  // Hook wake lock to play state
+  const _start = start, _stop = stop;
+  start = async function(){
+    await requestWakeLock();
+    _start();
+  }
+  stop = async function(){
+    _stop();
+    await releaseWakeLock();
+  }
+
+})();
+</script>
+</body>
+</html>

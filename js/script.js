@@ -1,8 +1,9 @@
+/* ===== Green Up — shared script (no-login, v15) ===== */
 
-/** Site-wide ï¿½userï¿½ */
+/** Site-wide “user” (always on) */
 const DEFAULT_USER = "GREEN UP";
 
-/** Display names */
+/** Display names (in case pages use the old map) */
 const DISPLAY_NAMES = {
   "green up": "GREEN UP",
   greenup: "GREEN UP",
@@ -28,7 +29,7 @@ function hasAuthCookie() {
   catch(_) { return false; }
 }
 
-/* ---------- Auth shim ---------- */
+/* ---------- Auth shim (always-on guest) ---------- */
 const Auth = {
   ensureGuest() {
     try {
@@ -66,14 +67,14 @@ const Auth = {
 /* Ensure flags exist on every load */
 Auth.ensureGuest();
 
-/* --- Global ï¿½guardï¿½ --- */
+/* --- Global “guard”: just send index -> frontpage, never block anything --- */
 (function softRouter(){
   const page = (location.pathname.split("/").pop() || "index.html").toLowerCase();
   const isLogin = page === "" || page === "index.html" || page === "index.htm";
   if (isLogin) { location.replace("frontpage.html"); }
 })();
 
-/* ---------- Rank helpers ---------- */
+/* ---------- Rank helpers (used to set avatar everywhere) ---------- */
 function getLeafCountFallback() {
   const raw = Auth.get("greenup_count", "0");
   let n = parseInt(raw, 10);
@@ -148,7 +149,7 @@ function recomputeAndPersistStreak(){
 
 /* ---------- UI boot ---------- */
 document.addEventListener("DOMContentLoaded", () => {
-  // user menu
+  // user menu (unchanged)
   const userTrigger = $("#userMenuBtn");
   const userMenu    = $("#userMenu");
   if (userTrigger && userMenu) {
@@ -159,14 +160,14 @@ document.addEventListener("DOMContentLoaded", () => {
     document.addEventListener("keydown", e => { if (e.key === "Escape") closeMenu(); });
   }
 
-  // haptics on call icon
+  // haptics on call icon (unchanged)
   const telLink   = document.querySelector(".island-footer .tel");
   const phoneIcon = document.querySelector(".island-footer .phone-icon");
   function buzz(){ try{ if (navigator.vibrate) navigator.vibrate([30,40,30]); }catch(_){} }
   if (telLink)   { telLink.addEventListener("click", buzz);   telLink.addEventListener("touchstart", buzz, { passive:true }); }
   if (phoneIcon) { phoneIcon.addEventListener("click", buzz); phoneIcon.addEventListener("touchstart", buzz, { passive:true }); }
 
-
+  // logout still “works”, but index immediately logs back in & forwards to frontpage
   const logoutBtn = $("#logoutBtn");
   if (logoutBtn) {
     logoutBtn.addEventListener("click", () => {

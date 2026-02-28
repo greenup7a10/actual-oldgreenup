@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STEAM+ EDUCATION</title>
+  <!-- Ngăn chọn và sao chép cơ bản -->
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+    /* Vô hiệu hóa drag */
+    * {
+      -webkit-user-drag: none;
+    }
+    .page {
+      position: relative;
+      min-height: 100vh;
+      background: #000;
+    }
+    .frame-wrap {
+      position: relative;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+      background: #111;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      pointer-events: auto; /* có thể chuyển thành none nếu muốn khóa hoàn toàn */
+    }
+    /* Lớp phủ để hạn chế thao tác trực tiếp nếu cần (mặc định tắt) */
+    .overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none; /* đổi thành auto để chặn tương tác */
+      background: transparent; /* có thể đổi thành rgba(0,0,0,0.02) để khó select */
+    }
+    /* Chặn chọn văn bản trong lớp phủ và wrapper */
+    .frame-wrap, .overlay {
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+      <h1>STEAM+ EDUCATION </h1>
+  <div class="page">
+    <div class="frame-wrap" oncontextmenu="return false;">
+      
+      <iframe src="https://online.flipbuilder.com/sdtta/axwr/" allowfullscreen="true" referrerpolicy="no-referrer"></iframe>
+      <div class="overlay" aria-hidden="true"></div>
+    </div>
+  </div>
+
+  <script>
+    // Lưu ý: Không thể ngăn 100% việc xem nguồn, đây chỉ là các biện pháp làm khó.
+
+    // Chặn menu chuột phải toàn trang
+    document.addEventListener('contextmenu', function (e) {
+      e.preventDefault();
+    }, { capture: true });
+
+    // Chặn kéo thả
+    document.addEventListener('dragstart', function (e) { e.preventDefault(); }, true);
+    document.addEventListener('drop', function (e) { e.preventDefault(); }, true);
+
+    // Chặn chọn và sao chép
+    document.addEventListener('selectstart', function (e) { e.preventDefault(); }, true);
+    document.addEventListener('copy', function (e) {
+      e.preventDefault();
+      if (e.clipboardData) {
+        e.clipboardData.setData('text/plain', 'Sao chép bị vô hiệu hóa.');
+      }
+    }, true);
+
+    // Chặn các phím tắt phổ biến để xem nguồn/devtools/sao chép/lưu
+    document.addEventListener('keydown', function (e) {
+      const k = e.key.toLowerCase();
+      const ctrl = e.ctrlKey || e.metaKey; // Ctrl (Windows) hoặc Cmd (macOS)
+
+      // F12 hoặc Ctrl/Cmd+Shift+I/J/C/K (DevTools)
+      if (k === 'f12' || (ctrl && e.shiftKey && ['i', 'j', 'c', 'k'].includes(k))) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // Ctrl/Cmd+U (view-source), Ctrl/Cmd+S (save), Ctrl/Cmd+P (print), Ctrl/Cmd+C/X (copy/cut)
+      if (ctrl && ['u', 's', 'p', 'c', 'x'].includes(k)) {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+
+      // Ctrl/Cmd+A (select all)
+      if (ctrl && k === 'a') {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    }, true);
+
+    // Cố gắng vô hiệu hóa text selection khi focus vào iframe (nếu cùng nguồn gốc mới có hiệu lực)
+    // Với iframe cross-origin, ta chỉ dựa vào lớp phủ/không cho select ở ngoài.
+
+    // Optional: kích hoạt lớp phủ để chặn tương tác (bật khi cần)
+    // document.querySelector('.overlay').style.pointerEvents = 'auto';
+  </script>
+</body>
+</html>
